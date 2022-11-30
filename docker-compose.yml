@@ -12,3 +12,5 @@ services:
     ports:
      - "1234:1234"
     volumes: ['./app:/app']
+  redis:
+    image: "redis:alpine"
