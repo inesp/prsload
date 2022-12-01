@@ -1,5 +1,10 @@
 # See stats about PR reviews
 
+Get an [API access token from GitHub](https://github.com/settings/tokens) and put it into your `.env` file (on root):
+```
+GITHUB_API_TOKEN=gho_8765...............
+```
+
 Start the code with 
 
 ```shell
