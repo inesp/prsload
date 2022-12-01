@@ -22,6 +22,14 @@ BLOCKLISTED_REPOS = {
     "sleuth-io/sleuth-deck",
     "sleuth-io/sleuth-sample-deploy",
 }
+BLOCKLISTED_USERS = {
+    "IgorBogdanovskiSleuth",
+    "daniel-dejuan-sleuth",
+    "jjm",
+    "kcb-sleuth",
+    "adamchatko",
+    "detkin",
+}
 PRS_LIMIT = 100
 
 logger = logging.getLogger(__name__)
@@ -153,7 +161,7 @@ def _fetch_prs_with_reviews(repo_owner, repo_name):
         for raw_review_request in pr_data["timelineItems"]["nodes"]:
             user = safe_traverse(raw_review_request, "requestedReviewer.login")
             raw_date = raw_review_request.get("createdAt")
-            if not user or not raw_date or user == pr_author:
+            if not user or not raw_date or user == pr_author or user in BLOCKLISTED_USERS:
                 continue
 
             requested_at: datetime = parse_str_to_date(raw_date)
@@ -176,7 +184,7 @@ def _fetch_prs_with_reviews(repo_owner, repo_name):
             published_at = parse_str_to_date(raw_review["publishedAt"])
             state = raw_review["state"]
 
-            if user == pr_author:
+            if user == pr_author or user in BLOCKLISTED_USERS:
                 continue
 
             if not user in reviews_by_user:
