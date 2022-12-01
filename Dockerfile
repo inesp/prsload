@@ -4,10 +4,9 @@ ENV HOST 0.0.0.0
 ENV PORT 1234
 ENV DEBUG true
 
-COPY ./app /app
+COPY . /app
 WORKDIR /app
 
-COPY requirements.txt .
 
 RUN pip install -U setuptools pip
 RUN pip install -r requirements.txt
