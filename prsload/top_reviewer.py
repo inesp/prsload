@@ -75,7 +75,10 @@ class UserDataForReviewSpeed:
         reminder = total_seconds - hours * 3600
         minutes = int(reminder // 60)
         seconds = int(reminder - minutes * 60)
-        return f"{hours}:{minutes}:{seconds}"
+
+        hours_part = f"{hours}h " if hours else ""
+
+        return f"{hours_part}{minutes}m {seconds}s"
 
     @property
     def sorted_reaction_times(self):
