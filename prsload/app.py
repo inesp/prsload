@@ -4,6 +4,7 @@ from flask import Flask
 
 from prsload import github
 from prsload.fetch import get_prs_data
+from prsload.templatetags.template_filters import choose_color
 from prsload.top_reviewer import get_top_reviewers
 
 app = Flask(__name__)
@@ -43,3 +44,9 @@ def top_reviewers():
 def average_time_to_review():
     prs = get_prs_data()
     return {}
+
+
+@app.template_filter("colorful_percentage")
+def colorful_percentage(value: float):
+    color = choose_color(value)
+    return f"<span class='bg-[{color}] text-white p-1 rounded'>{value}&nbsp;%</span>"

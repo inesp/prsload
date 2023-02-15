@@ -10,11 +10,13 @@ from operator import attrgetter
 
 from flask import render_template
 
+from prsload.constants import NO_REVIEW_TIME_HIKE
 from prsload.constants import PR_AUTHORS_TO_IGNORE
 from prsload.constants import NUM_OF_DAYS
 from prsload.constants import REVIEWERS_TO_IGNORE
 from prsload.fetch import get_prs_data
 from prsload.pr_type import PR
+from prsload.templatetags.template_filters import ALL_COLORS
 
 
 @dataclasses.dataclass
@@ -48,6 +50,7 @@ class UserDatForReviewLoad:
 class UserDataForReviewSpeed:
     user: str
     reaction_times: set[timedelta] = field(default_factory=set)
+    reaction_times_for_no_reviews: set[timedelta] = field(default_factory=set)
     prs_with_no_review: set[str] = field(default_factory=set)
 
     @property
@@ -57,6 +60,14 @@ class UserDataForReviewSpeed:
     @property
     def num_of_reviews_above_two_hours(self):
         return len([t for t in self.reaction_times if t > timedelta(hours=2)])
+
+    def get_num_of_reviews_below(self, num_of_minutes) -> tuple[int, float]:
+        num_of_reviews: int = len(
+            [t for t in self.reaction_times if t <= timedelta(minutes=num_of_minutes)]
+        )
+        num_of_all_prs: int = len(self.reaction_times) + len(self.prs_with_no_review)
+        percentage: float = round((num_of_reviews * 100) / num_of_all_prs, 0)
+        return num_of_reviews, percentage
 
     @property
     def avg_reaction_time(self) -> timedelta:
@@ -96,6 +107,7 @@ def get_top_reviewers():
             prs, oldest_valid_pr
         ),
         fastest_reviewers=_get_reviewers_sorted_by_speed(prs, oldest_valid_pr),
+        scale_colors=ALL_COLORS,
     )
 
 

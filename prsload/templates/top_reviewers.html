@@ -46,14 +46,24 @@
 
 
     <h2 class="py-6 px-2 text-2xl">Reviewers by their response time</h2>
+    <p>Scale:</p>
+    <div class="flex">
+      {% for color in scale_colors %}
+        <div class="bg-[{{ color }}] w-24">&nbsp;</div>
+      {% endfor %}
+    </div>
     <table class="table-auto">
       <thead>
         <tr>
           <th class="border-collapse border border-slate-400 p-1">Reviewer</th>
           <th class="border-collapse border border-slate-400 p-1">Avg response time (review request - comment)</th>
-          <th class="border-collapse border border-slate-400 p-1">% of reviews > 2h</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of PRs reviewed</th>
+          <th class="border-collapse border border-slate-400 p-1">num of reviews < 5 mins</th>
+          <th class="border-collapse border border-slate-400 p-1">num of reviews < 15 mins</th>
+          <th class="border-collapse border border-slate-400 p-1">num of reviews < 30 mins</th>
+          <th class="border-collapse border border-slate-400 p-1">num of reviews < 1h</th>
+          <th class="border-collapse border border-slate-400 p-1">num of reviews < 2h</th>
           <th class="border-collapse border border-slate-400 p-1">Num of PRs that weren't reviewed</th>
+          <th class="border-collapse border border-slate-400 p-1">Num of PRs reviewed</th>
         </tr>
       </thead>
       <tbody>
@@ -67,9 +77,43 @@
                   seconds: {% for review_time in reviewer_data.sorted_reaction_times %}{{ review_time.total_seconds() | int }}{{ ", " if not loop.last else "" }}{% endfor %}
                 </small>
               </td>
-              <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.num_of_reviews_above_two_hours / reviewer_data.reaction_times | length * 100 }}</td>
+              <td class="border-collapse border border-slate-400 p-1">
+                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(5) %}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                 {% endwith %}
+              </td>
+              <td class="border-collapse border border-slate-400 p-1">
+                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(15) %}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                 {% endwith %}
+              </td>
+              <td class="border-collapse border border-slate-400 p-1">
+                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(30) %}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                 {% endwith %}
+              </td>
+              <td class="border-collapse border border-slate-400 p-1">
+                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(60) %}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                 {% endwith %}
+              </td>
+              <td class="border-collapse border border-slate-400 p-1">
+                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(120) %}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                 {% endwith %}
+              </td>
+              <td class="border-collapse border border-slate-400 p-1">
+                {{ reviewer_data.prs_with_no_review | length }}
+                <details>
+                  <summary><small>List of PRS:</small></summary>
+                  <ul>
+                      {% for pr_uid in reviewer_data.prs_with_no_review %}
+                        <li>{{ pr_uid }}</li>
+                      {% endfor %}
+                    </ul>
+                </details>
+              </td>
               <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.num_of_prs_reviewed }}</td>
-              <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_with_no_review | length }}</td>
             </tr>
         {% endfor %}
       </tbody>
