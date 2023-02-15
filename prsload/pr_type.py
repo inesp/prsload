@@ -23,6 +23,7 @@ class PR:
     repo: str
     title: str
     url: str
+    author: str
     created_at: datetime
     merged_at: datetime | None
     reviews: list[PRReview] = field(default_factory=list)
@@ -56,6 +57,7 @@ class PRSchema(Schema):
     repo = fields.Str()
     title = fields.Str()
     url = fields.Str()
+    author = fields.Str()
     created_at = fields.DateTime()
     merged_at = fields.DateTime(allow_none=True)
     reviews = fields.List(fields.Nested(PRReviewSchema))
@@ -67,6 +69,7 @@ class PRSchema(Schema):
             repo=data["repo"],
             title=data["title"],
             url=data["url"],
+            author=data["author"],
             created_at=data["created_at"],
             merged_at=data["merged_at"],
             reviews=data["reviews"],

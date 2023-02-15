@@ -4,6 +4,8 @@ import logging
 from datetime import datetime
 
 from prsload import github
+from prsload.constants import PR_AUTHORS_TO_IGNORE
+from prsload.constants import REVIEWERS_TO_IGNORE
 from prsload.date_utils import parse_str_to_date
 from prsload.dict_utils import safe_traverse
 from prsload.pr_type import PR
@@ -11,26 +13,6 @@ from prsload.pr_type import PRReview
 from prsload.redis_prs import get_prs_from_redis
 from prsload.redis_prs import save_prs_to_redis
 
-BLOCKLISTED_REPOS = {
-    "sleuth-io/sleuth-documentation-OLD",
-    "sleuth-io/sleuth-pr",
-    "sleuth-io/code-video-generator",
-    "sleuth-io/netlify-plugin-sleuth",
-    "sleuth-io/youtube-recorder",
-    "sleuth-io/sleuth-export",
-    "sleuth-io/test-repo",
-    "sleuth-io/sleuth-deck",
-    "sleuth-io/sleuth-sample-deploy",
-}
-BLOCKLISTED_USERS = {
-    "IgorBogdanovskiSleuth",
-    "daniel-dejuan-sleuth",
-    "jjm",
-    "kcb-sleuth",
-    "adamchatko",
-    "detkin",
-}
-PRS_LIMIT = 100
 
 logger = logging.getLogger(__name__)
 
@@ -139,15 +121,23 @@ def _fetch_prs_with_reviews(repo_owner, repo_name):
     prs: list[PR] = []
     for pr_data in response.data["repository"]["pullRequests"]["nodes"]:
         merged_at = pr_data["mergedAt"]
+        pr_author = pr_data["author"]["login"]
         pr = PR(
             number=int(pr_data["number"]),
             repo=repo_long_name,
             title=pr_data["title"],
             url=pr_data["url"],
+            author=pr_author,
             created_at=parse_str_to_date(pr_data["createdAt"]),
             merged_at=parse_str_to_date(merged_at) if merged_at else None,
         )
-        pr_author = pr_data["author"]["login"]
+
+        if pr_author in PR_AUTHORS_TO_IGNORE:
+            logger.info(
+                f"Ignoring pr of author {pr_author}: PR(number={pr.number}), url={pr.url}"
+            )
+            continue
+
         prs.append(pr)
         logger.info(f"Found PR(number={pr.number}), url={pr.url}")
 
@@ -161,7 +151,12 @@ def _fetch_prs_with_reviews(repo_owner, repo_name):
         for raw_review_request in pr_data["timelineItems"]["nodes"]:
             user = safe_traverse(raw_review_request, "requestedReviewer.login")
             raw_date = raw_review_request.get("createdAt")
-            if not user or not raw_date or user == pr_author or user in BLOCKLISTED_USERS:
+            if (
+                not user
+                or not raw_date
+                or user == pr_author
+                or user in REVIEWERS_TO_IGNORE
+            ):
                 continue
 
             requested_at: datetime = parse_str_to_date(raw_date)
@@ -184,7 +179,7 @@ def _fetch_prs_with_reviews(repo_owner, repo_name):
             published_at = parse_str_to_date(raw_review["publishedAt"])
             state = raw_review["state"]
 
-            if user == pr_author or user in BLOCKLISTED_USERS:
+            if user == pr_author or user in REVIEWERS_TO_IGNORE:
                 continue
 
             if not user in reviews_by_user:
