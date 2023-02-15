@@ -19,7 +19,6 @@ def safe_traverse(data: Union[Dict, List], path: str, backup_value=None) -> Any:
     value: Any = data
     try:
         for attr in attrs:
-
             if value is None:
                 return backup_value
 

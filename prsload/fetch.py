@@ -6,6 +6,7 @@ from datetime import datetime
 from prsload import github
 from prsload.constants import BLOCKLISTED_REPOS
 from prsload.constants import PR_AUTHORS_TO_IGNORE
+from prsload.constants import PRS_FETCH_PAGES_LIMIT
 from prsload.constants import PRS_LIMIT
 from prsload.constants import REVIEWERS_TO_IGNORE
 from prsload.date_utils import parse_str_to_date
@@ -33,7 +34,14 @@ def _fetch_all_pr_data() -> list[PR]:
     all_prs = []
     for owner, name in repos:
         if f"{owner}/{name}" not in BLOCKLISTED_REPOS:
-            all_prs.extend(_fetch_prs_with_reviews(owner, name))
+            do_continue = True
+            page = 0
+            after_cursor = None
+            while do_continue and (page := page + 1) <= PRS_FETCH_PAGES_LIMIT:
+                logger.info(f"Fetching page {page} for {owner}/{name}")
+                prs, after_cursor = _fetch_prs_with_reviews(owner, name, after_cursor)
+                do_continue = bool(after_cursor)
+                all_prs.extend(prs)
 
     return all_prs
 
@@ -68,10 +76,15 @@ def _fetch_all_sleuth_repos() -> list[tuple[str, str]]:
 
 
 _reviews_query = """
-query GetPRsWithReviews($owner: String!, $name: String!, $limit: Int!) {
+query GetPRsWithReviews($owner: String!, $name: String!, $limit: Int!, $afterCursor: String) {
   repository(owner: $owner, name: $name) {
     name
-    pullRequests(first: $limit, orderBy: {field: CREATED_AT, direction: DESC}) {
+    pullRequests(first: $limit, orderBy: {field: CREATED_AT, direction: DESC}, after: $afterCursor) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
       nodes {
         number
         title
@@ -113,13 +126,29 @@ query GetPRsWithReviews($owner: String!, $name: String!, $limit: Int!) {
 """
 
 
-def _fetch_prs_with_reviews(repo_owner, repo_name):
+def _fetch_prs_with_reviews(
+    repo_owner, repo_name, after_cursor: str | None
+) -> tuple[list[PR], str | None]:
     repo_long_name = f"{repo_owner}/{repo_name}"
-    logger.info(f"---------- Fetching PRs from repo {repo_long_name}")
+    logger.info(f"---------- Fetching PRs from repo {repo_long_name} {after_cursor=}")
     response = github.post_gql_query(
         query=_reviews_query,
-        variables=dict(owner=repo_owner, name=repo_name, limit=PRS_LIMIT),
+        variables=dict(
+            owner=repo_owner,
+            name=repo_name,
+            limit=PRS_LIMIT,
+            **dict(afterCursor=after_cursor) if after_cursor else {},
+        ),
     )
+
+    num_of_prs = response.data["repository"]["pullRequests"]["totalCount"]
+    end_cursor = response.data["repository"]["pullRequests"]["pageInfo"]["endCursor"]
+    has_next_page = response.data["repository"]["pullRequests"]["pageInfo"][
+        "hasNextPage"
+    ]
+
+    logger.info(f"Found {num_of_prs} PRs, the limit is at {PRS_LIMIT}")
+
     prs: list[PR] = []
     for pr_data in response.data["repository"]["pullRequests"]["nodes"]:
         merged_at = pr_data["mergedAt"]
@@ -199,7 +228,8 @@ def _fetch_prs_with_reviews(repo_owner, repo_name):
 
         pr.reviews = list(reviews_by_user.values())
 
-    return prs
+    next_after_cursor = end_cursor if has_next_page else None
+    return prs, next_after_cursor
 
 
 def _min_of_two(one: datetime | None, second: datetime) -> datetime:

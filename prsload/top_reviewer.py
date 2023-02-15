@@ -13,6 +13,7 @@ from flask import render_template
 from prsload.constants import NO_REVIEW_TIME_HIKE
 from prsload.constants import PR_AUTHORS_TO_IGNORE
 from prsload.constants import NUM_OF_DAYS
+from prsload.constants import PRS_FETCH_PAGES_LIMIT
 from prsload.constants import REVIEWERS_TO_IGNORE
 from prsload.fetch import get_prs_data
 from prsload.pr_type import PR
@@ -103,6 +104,7 @@ def get_top_reviewers():
     return render_template(
         "top_reviewers.html",
         num_of_days=NUM_OF_DAYS,
+        num_of_pr_pages=PRS_FETCH_PAGES_LIMIT,
         reviewers_with_most_prs=_get_reviewers_sorted_by_num_of_prs(
             prs, oldest_valid_pr
         ),

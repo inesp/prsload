@@ -8,6 +8,7 @@
 
 <body>
   <div class="container p-2">
+    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs stats for the last <b>{{ num_of_days }} days</b>. When fetching PRs we fetch only <b>{{ num_of_pr_pages }} * 100 PRs</b> for each repository.</h1>
 
     <h2 class="py-6 text-2xl">Reviewers sorted by num of approved/rejected PRs</h2>
     <table class="table-auto">
@@ -72,10 +73,12 @@
               <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.user }}</td>
               <td class="border-collapse border border-slate-400 p-1">
                 {{ reviewer_data.avg_reaction_time_str }}
-                <br/>
-                <small>
-                  seconds: {% for review_time in reviewer_data.sorted_reaction_times %}{{ review_time.total_seconds() | int }}{{ ", " if not loop.last else "" }}{% endfor %}
+                <details>
+                  <summary><small>actual seconds:</small></summary>
+                  <small>
+                  {% for review_time in reviewer_data.sorted_reaction_times %}{{ review_time.total_seconds() | int }}{{ ", " if not loop.last else "" }}{% endfor %}
                 </small>
+                </details>
               </td>
               <td class="border-collapse border border-slate-400 p-1">
                  {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(5) %}
