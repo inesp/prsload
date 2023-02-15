@@ -60,13 +60,13 @@ class UserDataForReviewSpeed:
 
     @property
     def avg_reaction_time(self) -> timedelta:
-        if len(self.reaction_times) == 0:
+        all_reaction_times = {*self.reaction_times, *self.reaction_times_for_no_reviews}
+        times: list[float] = [t.total_seconds() for t in all_reaction_times]
+
+        if not times:
             return timedelta(seconds=0)
-        return timedelta(
-            seconds=statistics.geometric_mean(
-                [t.total_seconds() for t in self.reaction_times]
-            )
-        )
+
+        return timedelta(seconds=statistics.median(times))
 
     @property
     def avg_reaction_time_str(self) -> str:
