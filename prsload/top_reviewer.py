@@ -121,7 +121,7 @@ def _get_reviewers_sorted_by_speed(
                 data_by_user[user] = UserDataForReviewSpeed(user=user)
             review_speed = data_by_user[user]
 
-            end: datetime | None = review.first_approve_or_disapprove
+            end: datetime | None = review.first_sign_of_life
             start: datetime | None = review.requested_at
             if start and not end:
                 review_speed.prs_with_no_review.add(pr.url)
