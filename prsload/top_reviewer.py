@@ -10,7 +10,9 @@ from operator import attrgetter
 
 from flask import render_template
 
+from prsload.constants import PR_AUTHORS_TO_IGNORE
 from prsload.constants import NUM_OF_DAYS
+from prsload.constants import REVIEWERS_TO_IGNORE
 from prsload.fetch import get_prs_data
 from prsload.pr_type import PR
 
@@ -102,8 +104,19 @@ def _get_reviewers_sorted_by_speed(
         if pr.merged_at and pr.merged_at < oldest_valid_pr:
             continue
 
+        if pr.author in PR_AUTHORS_TO_IGNORE:
+            continue
+
         for review in pr.reviews:
             user: str = review.user
+
+            if user in PR_AUTHORS_TO_IGNORE or user in REVIEWERS_TO_IGNORE:
+                print(f"Ignoring user {user}")
+                continue
+
+            if user == pr.author:
+                continue
+
             if user not in data_by_user:
                 data_by_user[user] = UserDataForReviewSpeed(user=user)
             review_speed = data_by_user[user]
