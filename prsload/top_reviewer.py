@@ -129,9 +129,9 @@ def _get_reviewers_sorted_by_speed(
                 # if they reviewed before they were assigned, we reward them with reaction_time=0
                 diff = end - start if end >= start else timedelta(seconds=0)
                 review_speed.reaction_times.add(diff)
-            # elif not start and end:
-            #     # if they reviewed, but were never assigned, we reward them with reaction_time=0
-            #     review_speed.reaction_times.add(timedelta(seconds=0))
+            elif not start and end:
+                # if they reviewed, but were never assigned, we reward them with reaction_time=0
+                review_speed.reaction_times.add(timedelta(seconds=0))
 
     all_data: list[UserDataForReviewSpeed] = [
         data for data in data_by_user.values() if data.num_of_prs_reviewed > 0
