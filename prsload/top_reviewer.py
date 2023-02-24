@@ -15,6 +15,7 @@ from prsload.constants import PR_AUTHORS_TO_IGNORE
 from prsload.constants import NUM_OF_DAYS
 from prsload.constants import PRS_FETCH_PAGES_LIMIT
 from prsload.constants import REVIEWERS_TO_IGNORE
+from prsload.constants import VACATION
 from prsload.fetch import get_prs_data
 from prsload.pr_type import PR
 from prsload.templatetags.template_filters import ALL_COLORS
@@ -134,6 +135,13 @@ def _get_reviewers_sorted_by_speed(
             if user == pr.author:
                 continue
 
+            vacation_time: tuple[datetime, datetime]|None = VACATION.get(user)
+            if vacation_time and review.requested_at:
+                vacation_start, vacation_end = vacation_time
+                if vacation_start <= review.requested_at <= vacation_end:
+                    print(f"Vacation time, skipping, {user}, {review.requested_at} {pr.url}")
+                    continue
+
             if user not in data_by_user:
                 data_by_user[user] = UserDataForReviewSpeed(user=user)
             review_speed = data_by_user[user]
@@ -179,7 +187,6 @@ def _get_reviewers_sorted_by_num_of_prs(prs: list[PR], oldest_valid_pr: datetime
         if pr.merged_at and pr.merged_at < oldest_valid_pr:
             continue
 
-        print(f"Handling PR {pr.uid}")
         pr_uid: int = pr.uid
         for review in pr.reviews:
             user = review.user

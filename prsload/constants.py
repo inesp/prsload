@@ -1,4 +1,6 @@
+from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 
 NUM_OF_DAYS = 31
 
@@ -33,3 +35,9 @@ PRS_FETCH_PAGES_LIMIT = 6
 
 # TODO: Should we add this hike?? It messes with the numbers, but not in a predicable way..
 NO_REVIEW_TIME_HIKE = timedelta(minutes=0)
+
+VACATION = {
+    "zidarsk8": (datetime(2023, 2, 13, tzinfo=timezone.utc), datetime(2023, 2, 18, tzinfo=timezone.utc)),
+    "nejcambrozic": (datetime(2023, 2, 20, tzinfo=timezone.utc), datetime(2023, 2, 25, tzinfo=timezone.utc)),
+    "mzgajner": (datetime(2023, 2, 13, tzinfo=timezone.utc), datetime(2023, 2, 18, tzinfo=timezone.utc)),
+}
