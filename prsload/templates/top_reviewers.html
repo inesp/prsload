@@ -11,6 +11,12 @@
     <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs stats for the last <b>{{ num_of_days }} days</b>. When fetching PRs we fetch only <b>{{ num_of_pr_pages }} * 100 PRs</b> for each repository.</h1>
 
     <h2 class="py-6 text-2xl">Reviewers sorted by num of approved/rejected PRs</h2>
+    <p>Scale:</p>
+    <div class="flex">
+      {% for color in scale_colors %}
+        <div class="bg-[{{ color }}] w-24">&nbsp;</div>
+      {% endfor %}
+    </div>
     <table class="table-auto">
       <thead>
         <tr>
@@ -29,8 +35,8 @@
             <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_commented | length }}</td>
             <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_review_was_requested | length }}</td>
             <td class="border-collapse border border-slate-400 p-1">
-              {{ reviewer_data.prs_where_no_review_response | length }}, <span
-                >{{ reviewer_data.percentage_of_prs_with_missing_review }}% </span>
+              {{ reviewer_data.prs_where_no_review_response | length }} <small>PR(s)</small> = <span
+                >{{ reviewer_data.percentage_of_prs_with_missing_review | colorful_percentage_for_missing_reviews | safe }}%</span>
                 <details>
                   <summary><small>List of PRS:</small></summary>
                   <ul>
@@ -82,27 +88,27 @@
               </td>
               <td class="border-collapse border border-slate-400 p-1">
                  {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(5) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
                  {% endwith %}
               </td>
               <td class="border-collapse border border-slate-400 p-1">
                  {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(15) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
                  {% endwith %}
               </td>
               <td class="border-collapse border border-slate-400 p-1">
                  {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(30) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
                  {% endwith %}
               </td>
               <td class="border-collapse border border-slate-400 p-1">
                  {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(60) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
                  {% endwith %}
               </td>
               <td class="border-collapse border border-slate-400 p-1">
                  {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(120) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage | safe }}
+                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
                  {% endwith %}
               </td>
               <td class="border-collapse border border-slate-400 p-1">
