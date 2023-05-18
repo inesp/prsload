@@ -9,7 +9,7 @@ from prsload.redis_client import decode_value
 from prsload.redis_client import redis_client
 
 CACHE_DURATION = timedelta(minutes=30)
-CACHE_KEY = "all_pr_data_8"
+CACHE_KEY = "all_pr_data"
 
 
 logger = logging.getLogger(__name__)

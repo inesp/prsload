@@ -2,7 +2,7 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 
-NUM_OF_DAYS = 31
+NUM_OF_DAYS = 40
 
 BLOCKLISTED_REPOS = {
     "sleuth-io/sleuth-documentation-OLD",
@@ -14,6 +14,7 @@ BLOCKLISTED_REPOS = {
     "sleuth-io/test-repo",
     "sleuth-io/sleuth-deck",
     "sleuth-io/sleuth-sample-deploy",
+    "sleuth-io/sleuth-marketing-site",
 }
 REVIEWERS_TO_IGNORE = {
     "IgorBogdanovskiSleuth",
@@ -23,6 +24,7 @@ REVIEWERS_TO_IGNORE = {
     "adamchatko",
     "detkin",
     "cwgw",
+    "zidarsk8",
 }
 PR_AUTHORS_TO_IGNORE = {
     "ptrikutam",
@@ -37,7 +39,8 @@ PRS_FETCH_PAGES_LIMIT = 6
 NO_REVIEW_TIME_HIKE = timedelta(minutes=0)
 
 VACATION = {
-    "zidarsk8": (datetime(2023, 2, 13, tzinfo=timezone.utc), datetime(2023, 2, 18, tzinfo=timezone.utc)),
-    "nejcambrozic": (datetime(2023, 2, 20, tzinfo=timezone.utc), datetime(2023, 2, 25, tzinfo=timezone.utc)),
+    "nejcambrozic": (datetime(2023, 5, 8, tzinfo=timezone.utc), datetime(2023, 5, 28, tzinfo=timezone.utc)),
     "mzgajner": (datetime(2023, 2, 13, tzinfo=timezone.utc), datetime(2023, 2, 18, tzinfo=timezone.utc)),
+    "nhumrich": (datetime(2023, 4, 3, tzinfo=timezone.utc), datetime(2023, 4, 7, tzinfo=timezone.utc)),
+    "davidpristovnik": (datetime(2023, 4, 24, tzinfo=timezone.utc), datetime(2023, 4, 26  , tzinfo=timezone.utc)),
 }
