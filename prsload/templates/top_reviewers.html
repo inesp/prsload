@@ -30,7 +30,7 @@
       <tbody>
         {% for reviewer_data in reviewers_with_most_prs %}
           <tr>
-            <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.user }}</td>
+            <td class="border-collapse border border-slate-400 p-1"><details><summary>...</summary>{{ reviewer_data.user }}</details></td>
             <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_review_finished | length }}</td>
             <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_commented | length }}</td>
             <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_review_was_requested | length }}</td>
@@ -76,7 +76,7 @@
       <tbody>
         {% for reviewer_data in fastest_reviewers %}
             <tr>
-              <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.user }}</td>
+              <td class="border-collapse border border-slate-400 p-1"><details><summary>...</summary>{{ reviewer_data.user }}</details></td>
               <td class="border-collapse border border-slate-400 p-1">
                 {{ reviewer_data.avg_reaction_time_str }}
                 <details>
