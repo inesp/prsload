@@ -1,11 +1,11 @@
 up: ## Stands up dev environment
-	docker-compose -f docker-compose.yml up
+	docker compose up
 
-upd: ## Stands up dev environment
-	docker-compose -f docker-compose.yml up --detach  && docker-compose -f docker-compose.yml ps
+up-detach: ## Stands up dev environment
+	docker compose --detach  && docker compose ps
 
 build: ## Builds dev environment
-	docker-compose -f docker-compose.yml build
+	docker compose build
 
 web: ## Opens web container
-	docker-compose -f docker-compose.yml exec web bash -c ". /venv/bin/activate; bash"
+	docker compose exec web bash -c ". /venv/bin/activate; bash"
