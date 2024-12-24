@@ -1,6 +1,7 @@
 import logging
 
 from flask import Flask
+from flask import render_template
 
 from prsload import github
 from prsload.fetch import get_prs_data
@@ -17,34 +18,22 @@ logging.basicConfig(
 )
 
 
-@app.route("/health")
-def health():
-    response = github.post_gql_query(query="{ viewer { login } }")
-    if response.exc:
-        raise response.exc
-
-    return {
-        "exc": str(response.exc),
-        "error": response.error,
-        "data": response.data,
-        "query": response.query,
-    }
-
-
 @app.route("/")
 def index():
-    return "Congratulations, it's a web app!"
+    response = github.post_gql_query(query="{ viewer { login } }")
+
+    return render_template(
+        "home.html",
+        exc=str(response.exc),
+        error=response.error,
+        data=response.data,
+        query=response.query,
+    )
 
 
 @app.route("/top_reviewers")
 def top_reviewers():
     return get_top_reviewers()
-
-
-@app.route("/average_time_to_review")
-def average_time_to_review():
-    prs = get_prs_data()
-    return {}
 
 
 @app.template_filter("colorful_percentage_for_review_time")

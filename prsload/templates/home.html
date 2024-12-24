@@ -1,0 +1,30 @@
+<!doctype html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>PRs load (How much work people spend on PR reviewing)</title>
+</head>
+
+<body>
+  <div class="container p-2">
+    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs load  or How much work people spend on PR reviewing</h1>
+
+    <h2 class="py-6 text-2xl">Results of testing GH token:</h2>
+    <p class="py-2">We ran the query <code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{ query }}</code>. And got the response:</p>
+    <ul class="list-disc list-inside">
+      <li class="ml-5">Data: <code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{ data }}</code></li>
+      <li class="ml-5">Error: {{  error }}</li>
+      <li class="ml-5">Exception: {{ exc }}</li>
+    </ul>
+    <p class="py-2">If you got an error, then your GH token isn't correct. Set it in <code>.env</code>.</p>
+
+    <h2 class="py-6 text-2xl">The following urls exist:</h2>
+
+    <ul class="list-disc list-inside">
+      <li class="ml-5"><a href="/top_reviewers" class="underline">Top reviewers</a> (the first page load is veeeeeeeery slow, because we fetch looooooooots of data from GH)</li>
+    </ul>
+  </div>
+
+</body>
+
