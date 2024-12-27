@@ -57,9 +57,12 @@ class UserDataForReviewSpeed:
         return len([t for t in self.reaction_times if t > timedelta(hours=2)])
 
     def get_num_of_reviews_below(self, num_of_minutes) -> tuple[int, float]:
-        num_of_reviews: int = len(
-            [t for t in self.reaction_times if t <= timedelta(minutes=num_of_minutes)]
-        )
+        if num_of_minutes < 0:
+            num_of_reviews = len(self.reaction_times)
+        else:
+            num_of_reviews: int = len(
+                [t for t in self.reaction_times if t <= timedelta(minutes=num_of_minutes)]
+            )
         num_of_all_prs: int = len(self.reaction_times) + len(self.prs_with_no_review)
         percentage: float = round((num_of_reviews * 100) / num_of_all_prs, 0)
         return num_of_reviews, percentage
@@ -133,20 +136,8 @@ def _get_reviewers_sorted_by_speed(prs: list[PR]) -> list[UserDataForReviewSpeed
             end: datetime | None = review.first_sign_of_life
             start: datetime | None = review.requested_at
             if start and not end:
+                # They were assigned, but never reviewed
                 review_speed.prs_with_no_review.add(pr.url)
-
-                now_or_pr_merged: datetime
-                if pr.merged_at:
-                    now_or_pr_merged = pr.merged_at  # + NO_REVIEW_TIME_HIKE
-                else:
-                    now_or_pr_merged = datetime.now(tz=timezone.utc)
-
-                diff = (
-                    now_or_pr_merged - start
-                    if now_or_pr_merged >= start
-                    else timedelta(seconds=0)
-                )
-                review_speed.reaction_times_for_no_reviews.add(diff)
             elif start and end:
                 # if they reviewed before they were assigned,
                 # we reward them with reaction_time=0

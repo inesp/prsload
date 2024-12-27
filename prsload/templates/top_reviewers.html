@@ -66,7 +66,7 @@
       <thead>
         <tr>
           <th class="border-collapse border border-slate-400 p-1">Reviewer</th>
-          <th class="border-collapse border border-slate-400 p-1">Avg response time (review request - comment)</th>
+          <th class="border-collapse border border-slate-400 p-1">Avg response time (review request - comment) - only includes PRs when they DID review</th>
           <th class="border-collapse border border-slate-400 p-1">num of reviews < 5 mins</th>
           <th class="border-collapse border border-slate-400 p-1">num of reviews < 15 mins</th>
           <th class="border-collapse border border-slate-400 p-1">num of reviews < 30 mins</th>
@@ -79,9 +79,16 @@
       <tbody>
         {% for reviewer_data in fastest_reviewers %}
             <tr>
-              <td class="border-collapse border border-slate-400 p-1"><details><summary>...</summary>{{ reviewer_data.user }}</details></td>
+              <td class="border-collapse border border-slate-400 p-1">
+                <details><summary>...</summary>{{ reviewer_data.user }}</details>
+              </td>
               <td class="border-collapse border border-slate-400 p-1">
                 {{ reviewer_data.avg_reaction_time_str }}
+
+                {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(-1) %}
+                   <br>Reviewed PRs: {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
+                 {% endwith %}
+
                 <details>
                   <summary><small>actual seconds:</small></summary>
                   <small>
