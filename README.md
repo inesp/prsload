@@ -14,6 +14,10 @@ make build up
 
 Open the page [http://127.0.0.1:1234/top_reviewers](http://127.0.0.1:1234/top_reviewers).
 
+You should see something like:
+![prs-load.png](./assets/prs-load.png)
+
+
 ## Details:
 
 We fetch a LOT of data and it can take several minutes. For this reason, we cache GH data in redis for this
