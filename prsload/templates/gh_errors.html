@@ -1,0 +1,26 @@
+<!doctype html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Errors in GH respone</title>
+</head>
+
+<body>
+  <div class="container p-2">
+    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">Couldn't load PRs, got an error from GitHub</h1>
+
+    <p class="py-6 text-xl">
+      {{ error_msg }}
+      <code>{{ errors }}</code>
+    </p>
+
+    <p>Query we ran:</p>
+    <code>{{ query }}</code>
+    <p>Variables:</p>
+    <code>{{ variables }}</code>
+
+  </div>
+
+</body>
+

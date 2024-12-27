@@ -1,0 +1,12 @@
+query GetRepos($login: String!) {
+  organization(login: $login){
+    repositories(first:100){
+      nodes{
+        name
+        owner{
+          login
+        }
+      }
+    }
+  }
+}

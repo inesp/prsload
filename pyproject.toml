@@ -1,0 +1,35 @@
+[project]
+name = "prsload"
+version = "0.2.0"
+description = "PR reviewers stats"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "flask>=3.1.0,<4.0",
+    "marshmallow>=3.23.2",
+    "redis>=5.2.1",
+    "requests>=2.32.3",
+]
+
+[dependency-groups]
+dev = [
+    "black>=24.10.0",
+    "ipdb>=0.13.13",
+    "mypy>=1.14.0",
+    "ruff>=0.8.4",
+    "types-requests>=2.32.0.20241016",
+]
+
+[mypy]
+strict = true
+show_error_codes = true
+no_implicit_optional = true
+
+[tool.ruff]
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "E401"]
+
+[tool.ruff.format]
+select = ["E"]

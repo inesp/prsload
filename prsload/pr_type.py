@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from dataclasses import field
+import logging
+from dataclasses import dataclass, field
 from datetime import datetime
 
-from marshmallow import fields
-from marshmallow import post_load
-from marshmallow import Schema
+from marshmallow import Schema, fields, post_load
+
+from prsload.prs_settings import get_settings
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -15,6 +17,17 @@ class PRReview:
     requested_at: datetime | None
     first_sign_of_life: datetime | None = None
     first_approve_or_disapprove: datetime | None = None
+
+    def was_reviewer_on_vacation(self) -> bool:
+        user_vacation_time = get_settings().VACATION.get(self.user)
+        if user_vacation_time and self.requested_at:
+            vacation_start, vacation_end = user_vacation_time
+            if vacation_start <= self.requested_at <= vacation_end:
+                logger.info(
+                    f"Vacation time, skipping, {self.user}, {self.requested_at}"
+                )
+                return True
+        return False
 
 
 @dataclass
@@ -34,6 +47,37 @@ class PR:
 
     def to_json(self):
         return PRSchema().dump(self)
+
+    def is_pr_merge_too_old(self):
+        if not self.merged_at:
+            return False
+        return self.merged_at < get_settings().OLDEST_VALID_PR_MERGE_DATE
+
+    def is_pr_create_too_old(self):
+        return self.created_at < get_settings().OLDEST_VALID_PR_CREATE_DATE
+
+    def remove_vacation_reviews(self):
+        self.reviews = [
+            review for review in self.reviews if not review.was_reviewer_on_vacation()
+        ]
+
+    def remove_irrelevant_reviews(self):
+        settings = get_settings()
+        irrelevant_reviewers = [*settings.REVIEWERS_TO_IGNORE, self.author]
+        new_reviews = []
+        for review in self.reviews:
+            if review.user in irrelevant_reviewers:
+                logger.info(f"Ignoring user {review.user}")
+                continue
+            new_reviews.append(review)
+        self.reviews = new_reviews
+
+    def do_ignore_pr(self) -> bool:
+        if self.merged_at and self.is_pr_merge_too_old():
+            return True
+        if self.author in get_settings().PR_AUTHORS_TO_IGNORE:
+            return True
+        return False
 
 
 class PRReviewSchema(Schema):

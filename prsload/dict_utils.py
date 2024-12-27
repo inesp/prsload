@@ -1,17 +1,16 @@
 import re
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Union
 
 array_index = re.compile(r"\[(-)?\d]")
 
 
-def safe_traverse(data: Union[Dict, List], path: str, backup_value=None) -> Any:
-    """Get a nested value from the dictionary. Suppress all Key and Value errors and return backup_value,
+def safe_traverse(data: dict | list, path: str, backup_value=None) -> Any:
+    """Get a nested value from the dictionary.
+    Suppress all Key and Value errors and return backup_value,
     if the real value cannot be found.
 
-    Path has to have attrs separated by a dot. It supports named attrs and array indexes,
+    Path has to have attrs separated by a dot. It supports named attrs
+    and array indexes,
       example: merged_prs.[0].title
 
     """

@@ -1,0 +1,48 @@
+query GetPRsWithReviews($owner: String!, $name: String!, $limit: Int!, $afterCursor: String) {
+  repository(owner: $owner, name: $name) {
+    name
+    pullRequests(first: $limit, orderBy: {field: CREATED_AT, direction: DESC}, after: $afterCursor) {
+      totalCount
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      nodes {
+        number
+        title
+        url
+        createdAt
+        mergedAt
+        closedAt
+        author {
+          login
+        }
+        reviews(first: 100) {
+          totalCount
+          nodes {
+            author {
+              login
+            }
+            publishedAt
+            state
+          }
+        }
+        timelineItems(first: 100, itemTypes:[REVIEW_REQUESTED_EVENT]){
+          totalCount
+          nodes{
+            __typename
+            ... on ReviewRequestedEvent{
+              requestedReviewer{
+                  __typename
+                  ... on User{
+                    login
+                  }
+                }
+              createdAt
+            }
+          }
+        }
+      }
+    }
+  }
+}

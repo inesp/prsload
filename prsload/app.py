@@ -1,12 +1,12 @@
 import logging
 
 from flask import Flask
-from flask import render_template
 
-from prsload import github
-from prsload.fetch import get_prs_data
-from prsload.templatetags.template_filters import choose_color_for_review_time
-from prsload.templatetags.template_filters import choose_color_for_missing_reviews
+from prsload.home import get_home_response
+from prsload.templatetags.template_filters import (
+    choose_color_for_missing_reviews,
+    choose_color_for_review_time,
+)
 from prsload.top_reviewer import get_top_reviewers
 
 app = Flask(__name__)
@@ -20,15 +20,7 @@ logging.basicConfig(
 
 @app.route("/")
 def index():
-    response = github.post_gql_query(query="{ viewer { login } }")
-
-    return render_template(
-        "home.html",
-        exc=str(response.exc),
-        error=response.error,
-        data=response.data,
-        query=response.query,
-    )
+    return get_home_response()
 
 
 @app.route("/top_reviewers")

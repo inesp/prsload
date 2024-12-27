@@ -1,24 +1,21 @@
 from __future__ import annotations
 
 import dataclasses
+import logging
 import statistics
 from dataclasses import field
-from datetime import datetime
-from datetime import timedelta
-from datetime import timezone
+from datetime import datetime, timedelta, timezone
 from operator import attrgetter
 
 from flask import render_template
 
-from prsload.constants import NO_REVIEW_TIME_HIKE
-from prsload.constants import PR_AUTHORS_TO_IGNORE
-from prsload.constants import NUM_OF_DAYS
-from prsload.constants import PRS_FETCH_PAGES_LIMIT
-from prsload.constants import REVIEWERS_TO_IGNORE
-from prsload.constants import VACATION
-from prsload.fetch import get_prs_data
+from prsload.github.github import GitHubException
 from prsload.pr_type import PR
+from prsload.prs_settings import get_settings
+from prsload.redis_prs import fetch_all_prs_data
 from prsload.templatetags.template_filters import ALL_COLORS
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -42,10 +39,6 @@ class UserDatForReviewLoad:
             * len(self.prs_where_no_review_response)
             / len(self.prs_where_review_was_requested)
         )
-
-    # @property
-    # def score(self) -> int:
-    #     return self.prs_where_review_finished + 2 * self.prs_reviewed_extra -
 
 
 @dataclasses.dataclass
@@ -99,49 +92,40 @@ class UserDataForReviewSpeed:
 
 
 def get_top_reviewers():
-    prs = get_prs_data()
-    oldest_valid_pr = datetime.now(tz=timezone.utc) - timedelta(days=NUM_OF_DAYS)
+    try:
+        prs = fetch_all_prs_data()
+    except GitHubException as exc:
+        return render_template(
+            "gh_errors.html",
+            error_msg=str(exc),
+            errors=exc.gql_errors,
+            query=exc.query,
+            variables=exc.variables,
+        )
+
+    settings = get_settings()
+
+    prs = [pr for pr in prs if not pr.do_ignore_pr()]
+    for pr in prs:
+        pr.remove_vacation_reviews()
+        pr.remove_irrelevant_reviews()
 
     return render_template(
         "top_reviewers.html",
-        num_of_days=NUM_OF_DAYS,
-        num_of_pr_pages=PRS_FETCH_PAGES_LIMIT,
-        reviewers_with_most_prs=_get_reviewers_sorted_by_num_of_prs(
-            prs, oldest_valid_pr
-        ),
-        fastest_reviewers=_get_reviewers_sorted_by_speed(prs, oldest_valid_pr),
+        num_of_days=settings.NUM_OF_DAYS,
+        oldest_valid_merge_date=settings.OLDEST_VALID_PR_MERGE_DATE,
+        oldest_valid_create_date=settings.OLDEST_VALID_PR_CREATE_DATE,
+        reviewers_with_most_prs=_get_reviewers_sorted_by_num_of_prs(prs),
+        fastest_reviewers=_get_reviewers_sorted_by_speed(prs),
         scale_colors=ALL_COLORS,
     )
 
 
-def _get_reviewers_sorted_by_speed(
-    prs: list[PR], oldest_valid_pr: datetime
-) -> list[UserDataForReviewSpeed]:
+def _get_reviewers_sorted_by_speed(prs: list[PR]) -> list[UserDataForReviewSpeed]:
     data_by_user: dict[str, UserDataForReviewSpeed] = {}
     for pr in prs:
-        if pr.merged_at and pr.merged_at < oldest_valid_pr:
-            continue
-
-        if pr.author in PR_AUTHORS_TO_IGNORE:
-            continue
-
         for review in pr.reviews:
             user: str = review.user
-
-            if user in PR_AUTHORS_TO_IGNORE or user in REVIEWERS_TO_IGNORE:
-                print(f"Ignoring user {user}")
-                continue
-
-            if user == pr.author:
-                continue
-
-            vacation_time: tuple[datetime, datetime]|None = VACATION.get(user)
-            if vacation_time and review.requested_at:
-                vacation_start, vacation_end = vacation_time
-                if vacation_start <= review.requested_at <= vacation_end:
-                    print(f"Vacation time, skipping, {user}, {review.requested_at} {pr.url}")
-                    continue
-
             if user not in data_by_user:
                 data_by_user[user] = UserDataForReviewSpeed(user=user)
             review_speed = data_by_user[user]
@@ -153,7 +137,7 @@ def _get_reviewers_sorted_by_speed(
 
                 now_or_pr_merged: datetime
                 if pr.merged_at:
-                    now_or_pr_merged = pr.merged_at + NO_REVIEW_TIME_HIKE
+                    now_or_pr_merged = pr.merged_at  # + NO_REVIEW_TIME_HIKE
                 else:
                     now_or_pr_merged = datetime.now(tz=timezone.utc)
 
@@ -164,11 +148,13 @@ def _get_reviewers_sorted_by_speed(
                 )
                 review_speed.reaction_times_for_no_reviews.add(diff)
             elif start and end:
-                # if they reviewed before they were assigned, we reward them with reaction_time=0
+                # if they reviewed before they were assigned,
+                # we reward them with reaction_time=0
                 diff = end - start if end >= start else timedelta(seconds=0)
                 review_speed.reaction_times.add(diff)
             elif not start and end:
-                # if they reviewed, but were never assigned, we reward them with reaction_time=0
+                # if they reviewed, but were never assigned,
+                # we reward them with reaction_time=0
                 review_speed.reaction_times.add(timedelta(seconds=0))
 
     all_data: list[UserDataForReviewSpeed] = [
@@ -181,12 +167,9 @@ def _get_reviewers_sorted_by_speed(
     return sorted_data
 
 
-def _get_reviewers_sorted_by_num_of_prs(prs: list[PR], oldest_valid_pr: datetime):
+def _get_reviewers_sorted_by_num_of_prs(prs: list[PR]):
     data_by_users: dict[str, UserDatForReviewLoad] = {}
     for pr in prs:
-        if pr.merged_at and pr.merged_at < oldest_valid_pr:
-            continue
-
         pr_uid: int = pr.uid
         for review in pr.reviews:
             user = review.user

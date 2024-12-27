@@ -8,7 +8,10 @@
 
 <body>
   <div class="container p-2">
-    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs stats for the last <b>{{ num_of_days }} days</b>. When fetching PRs we fetch only <b>{{ num_of_pr_pages }} * 100 PRs</b> for each repository.</h1>
+    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs stats for the last <b>{{ num_of_days }} days</b>.
+      <br>Oldest merge date: <code>{{ oldest_valid_merge_date }}</code>.
+      <br>Oldest create date: <code>{{ oldest_valid_create_date }}</code>.
+    </h1>
 
     <h2 class="py-6 text-2xl">Reviewers sorted by num of approved/rejected PRs</h2>
     <p>Scale:</p>
