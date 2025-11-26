@@ -85,8 +85,9 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
-# settings
-settings.py
+# Environment variables and config
+.env
+pr-analytics.yml
 
 
 # virtualenv

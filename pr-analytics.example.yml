@@ -1,0 +1,27 @@
+# PR Analytics Configuration Template
+# Copy this to pr-analytics.yml and customize for your team
+
+analysis:
+  num_of_days: 180
+
+users:
+  pr_authors_to_ignore:
+    - user1
+    - user2
+  
+  reviewers_to_ignore:
+    - user1
+    - user2
+
+repositories:
+  blocklisted:
+    - org/repo1
+    - org/repo2
+
+vacation:
+  username1:
+    start: "2024-12-20T00:00:00Z"
+    end: "2025-01-01T00:00:00Z"
+  username2:
+    start: "2024-12-24T00:00:00Z" 
+    end: "2025-01-01T00:00:00Z"
