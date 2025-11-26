@@ -26,6 +26,8 @@ marshmallow==3.23.2
     # via prsload (pyproject.toml)
 packaging==24.2
     # via marshmallow
+pyyaml==6.0.3
+    # via prsload (pyproject.toml)
 redis==5.2.1
     # via prsload (pyproject.toml)
 requests==2.32.3
