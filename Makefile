@@ -7,9 +7,12 @@ up-redis: ## Stands up redis only in Docker
 up-flask-local: ## Stands up flask
 	uv run flask --app prsload/app.py --debug run --port 1234
 
-build: ## Builds dev environment
+build: upgrade-py lock-to-requirements ## Builds dev environment
 	docker compose build
 	uv pip compile pyproject.toml -o requirements.txt
+
+upgrade-py:
+	uv lock --upgrade
 
 lock-to-requirements:  ## Write requirements.txt from pyproject.toml
 	uv pip compile pyproject.toml -o requirements.txt
