@@ -19,6 +19,7 @@ dev = [
     "ipdb>=0.13.13",
     "mypy>=1.14.0",
     "ruff>=0.8.4",
+    "types-pyyaml>=6.0.12",
     "types-requests>=2.32.0.20241016",
 ]
 
@@ -29,9 +30,14 @@ no_implicit_optional = true
 
 [tool.ruff]
 target-version = "py313"
+line-length = 120
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "E401"]
-
-[tool.ruff.format]
-select = ["E"]
+# Use Ruff's recommended set + a few extras
+extend-select = [
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "S",   # flake8-bandit (security)  
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+]

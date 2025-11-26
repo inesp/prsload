@@ -18,6 +18,6 @@ lock-to-requirements:  ## Write requirements.txt from pyproject.toml
 	uv pip compile pyproject.toml -o requirements.txt
 
 lint: ## Lint code
-	uv run ruff format prsload settings.py
-	uv run ruff check --fix prsload settings.py
+	uv run ruff format prsload
+	uv run ruff check --fix prsload
 	uv run mypy prsload
