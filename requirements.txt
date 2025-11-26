@@ -8,6 +8,8 @@ charset-normalizer==3.4.1
     # via requests
 click==8.1.8
     # via flask
+duckdb==1.4.2
+    # via prsload (pyproject.toml)
 flask==3.1.0
     # via prsload (pyproject.toml)
 idna==3.10
