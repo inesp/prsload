@@ -1,43 +1,143 @@
-<!doctype html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>PRs load (How much work people spend on PR reviewing)</title>
-</head>
+{% extends "base.html" %}
 
-<body>
-  <div class="container p-2">
-    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs load  or How much work people spend on PR reviewing</h1>
 
-    <p class="py-6 text-xl">A few settings need to be set in <code>.env</code> before this code works.</p>
+{% block content %}
+<!-- Configuration Overview -->
+<div class="info-box-yellow mb-6">
 
-    <h2 class="py-6 text-2xl">Results of testing GH token:</h2>
-    <p class="py-2">We ran the query <code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{ query }}</code>. And got the response:</p>
-    <ul class="list-disc list-inside">
-      <li class="ml-5">Data: <code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{ data }}</code></li>
-      <li class="ml-5">Errors: {% if error %}<code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{  error }}</code>{% endif %}</li>
-      <li class="ml-5">Exception: {% if exc %}<code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{ exc }}</code>{% endif %}</li>
-    </ul>
-    <p class="py-2">If you got an error, then your GH token isn't correct. Set it in <code>.env</code>.</p>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div>
+      <h4 class="text-yellow-800 font-medium mb-2">Required Settings in <code class="code-yellow">.env</code></h4>
+      <p class="text-sm text-yellow-700 mb-2">Look at <code class="code-yellow">.env.example</code> for a complete list.</p>
+      <div class="bg-white rounded-lg shadow-sm border border-yellow-400 p-3">
+        <ul class="text-sm text-yellow-700 space-y-1 mt-1 ml-6 list-disc">
+          <li><code class="code-yellow">GH_API_TOKEN</code> - Your GitHub personal access token</li>
+          <li><code class="code-yellow">GH_LOGIN</code> - Your GitHub username</li>
+        </ul>
+      </div>
+    </div>
 
-    <h2 class="pt-6 pb-3 text-2xl">Settings</h2>
-    <ul class="list-disc list-inside">
-      {% for key, field in settings.as_dict.items() %}
-        <li class="ml-5"><code>{{ key }}</code>: <code>{{ field }}</code></li>
-      {% endfor %}
-    </ul>
+    <div>
+      <h4 class="text-yellow-800 font-medium mb-2">Optional Advanced Config in <code class="code-yellow">{{ settings.CONFIG_FILE_NAME }}</code></h4>
+      <p class="text-sm text-yellow-700 mb-2">Look at <code class="code-yellow">{{ settings.CONFIG_FILE_NAME }}.example</code> for a complete list.</p>
+      <div class="bg-white rounded-lg shadow-sm border border-yellow-400 p-3">
+        <ul class="text-sm text-yellow-700 space-y-1 mt-1 ml-6 list-disc">
+          <li>Repository blocklist</li>
+          <li>Users to ignore in analysis</li>
+          <li>Vacation schedules</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <h2 class="py-6 text-2xl">Redis test:</h2>
-    <p class="py-2">We pinged redis and got the following response</p>
-    <code class="bg-slate-800 text-zinc-100 px-3 py-1 rounded">{{ redis_response }}</code>
-
-    <h2 class="py-6 text-2xl">The following urls exist:</h2>
-
-    <ul class="list-disc list-inside">
-      <li class="ml-5"><a href="/top_reviewers" class="underline">Top reviewers</a> (the first page load is veeeeeeeery slow, because we fetch looooooooots of data from GH)</li>
-    </ul>
+<div class="grid md:grid-cols-2 gap-6">
+  <!-- GitHub Connection Status -->
+  {% set gh_ok = gh_response and not gh_exc %}
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center mb-4">
+      <div class="w-3 h-3 {% if gh_ok %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full mr-3"></div>
+      <h3 class="text-lg font-semibold text-gray-900">GitHub Connection</h3>
+      <span class="ml-auto {% if gh_ok %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} text-xs font-medium px-2 py-1 rounded">{% if gh_ok %}Connected{% else %}Error{% endif %}</span>
+    </div>
+    
+    {% if gh_ok %}
+      <div class="text-sm text-gray-600 mb-2">Successfully received GH response:</div>
+      <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm">{{ gh_response }}</code>
+    {% else %}
+      <div class="bg-red-50 border border-red-200 rounded p-3">
+        <p class="text-sm text-red-800 mb-2">GQL query <code class="code-red ">{{ gh_query }}</code>.</p>
+        <code class="code-red text-red-800 rounded text-xs block mb-2">{{ gh_exc.user_error_desc() }}</code>
+      </div>
+    {% endif %}
   </div>
 
-</body>
+  <!-- DuckDB Status -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    {% set duck_ok = duckdb_health and duckdb_health.status == 'healthy' %}
+    <div class="flex items-center mb-4">
+      <div class="w-3 h-3 {% if duck_ok %}bg-green-500{% else %}bg-red-500{% endif %} rounded-full mr-3"></div>
+      <h3 class="text-lg font-semibold text-gray-900">DuckDB Storage</h3>
+      <span class="ml-auto {% if duck_ok %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} text-xs font-medium px-2 py-1 rounded">
+        {% if duck_ok %}Healthy{% else %}Error{% endif %}
+      </span>
+    </div>
 
+      <div class="space-y-2">
+        <div>
+          <span class="text-sm text-gray-600">Database file:</span>
+          <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm ml-2">{{ duckdb_health.database_file }}</code>
+        </div>
+
+        {% if duck_ok %}
+          {% if duckdb_health.row_counts %}
+          <div>
+            <span class="text-sm text-gray-600">Data:</span>
+            {% for table, count in duckdb_health.row_counts.items() %}
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs ml-2">{{ count }} {{ table }}</span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        
+          <div>
+            <span class="text-sm text-gray-600">Tables:</span>
+            <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs ml-2">{{ duckdb_health.tables|join(', ') }}</code>
+          </div>
+
+        {% else %}
+          <div class="bg-red-50 border border-red-200 rounded p-3">
+            <p class="text-sm text-red-800 mb-2">DuckDB Connection Failed</p>
+            {% if duckdb_health and duckdb_health.error_msg %}
+              <code class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs block">{{ duckdb_health.error_msg }}</code>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div>
+          <a href="/recreate_db" class="text-red-600 hover:text-red-800 text-sm">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Recreate DB
+          </a>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div class="mt-6">
+  <!-- Configuration -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div class="flex items-center mb-4">
+      {% set config_ok = settings and not settings_error %}
+      <div class="w-3 h-3 {{ 'bg-green-500' if config_ok else 'bg-red-500' }} rounded-full mr-3"></div>
+      <h3 class="text-lg font-semibold text-gray-900">Configuration</h3>
+      <span class="ml-auto {{ 'bg-green-100 text-green-800' if config_ok else 'bg-red-100 text-red-800' }} text-xs font-medium px-2 py-1 rounded">
+        {{ 'Loaded' if config_ok else 'Error' }}
+      </span>
+    </div>
+    
+    {% if settings_error %}
+      <div class="info-box-red">
+        <p class="text-sm text-red-800 mb-2 font-medium">Configuration Error</p>
+        <code class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs block mb-3">{{ settings_error }}</code>
+      </div>
+    {% elif settings %}
+      <div class="space-y-3">
+        {% for key, field in settings.as_dict.items() %}
+          <div class="flex justify-between py-2 border-b border-gray-100">
+            <span class="text-sm font-medium text-gray-700">{{ key }}:</span>
+            <code class="text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
+              {% if key == 'GH_TOKEN' %}
+                {{ '***' + field[-4:] if field|length > 4 else '***' }}
+              {% else %}
+                {{ field }}
+              {% endif %}
+            </code>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

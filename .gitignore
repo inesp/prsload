@@ -112,3 +112,7 @@ tmp
 coverage-reports
 coverage*
 .DS_Store
+
+# DuckDB database files
+*.duckdb
+prs_analytics.duckdb

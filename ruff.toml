@@ -1,0 +1,37 @@
+target-version = "py313"
+line-length = 120
+
+[lint]
+# Use Ruff's recommended set + a few extras
+extend-select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes (fundamental Python errors)
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "SIM", # flake8-simplify
+    "RET",  # flake8-return
+    "A",   # flake8-builtins
+    "T10",  # flake8-debugger
+    "ISC",  # flake8-implicit-str-concat
+    "LOG",  # flake8-logging
+    "TID",
+    "C90",    # mccabe complexity (pylint had this)
+    "PL", # pylint
+    "PIE", # flake8-pie (unnecessary code patterns)
+    "PYI",
+    "RUF", # ruff-specific rules (catches common issues)
+]
+ignore= ["RET504", "PLR2004"]
+
+[lint.pylint]
+max-returns = 20
+
+[lint.mccabe]
+max-complexity = 20
+
+[lint.isort]
+force-single-line = true
+case-sensitive = false
+order-by-type = true

@@ -7,37 +7,28 @@ requires-python = ">=3.13"
 dependencies = [
     "duckdb>=1.4.2",
     "flask>=3.1.0,<4.0",
-    "marshmallow>=3.23.2",
     "pyyaml>=6.0",
-    "redis>=5.2.1",
     "requests>=2.32.3",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["prsload*"]
+exclude = ["assets*", "bin*", "venv*"]
 
 [dependency-groups]
 dev = [
     "black>=24.10.0",
+    "debugpy>=1.8.0",
     "ipdb>=0.13.13",
     "mypy>=1.14.0",
     "ruff>=0.8.4",
+    "types-flask>=1.1.6",
     "types-pyyaml>=6.0.12",
+    "types-redis>=4.6.0",
     "types-requests>=2.32.0.20241016",
 ]
 
-[mypy]
-strict = true
-show_error_codes = true
-no_implicit_optional = true
-
-[tool.ruff]
-target-version = "py313"
-line-length = 120
-
-[tool.ruff.lint]
-# Use Ruff's recommended set + a few extras
-extend-select = [
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "S",   # flake8-bandit (security)  
-    "UP",  # pyupgrade
-    "SIM", # flake8-simplify
-]
+[tool.black]
+line-length = 118
+target-version = ['py313']

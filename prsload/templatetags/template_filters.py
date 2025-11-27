@@ -25,7 +25,7 @@ ALL_COLORS = [
 ]
 
 
-def choose_color_for_review_time(value: float):
+def choose_color_for_review_time(value: float) -> str:
     if value >= 50:
         return GREEN3
     if value >= 45:
@@ -49,7 +49,7 @@ def choose_color_for_review_time(value: float):
     return RED1
 
 
-def choose_color_for_missing_reviews(value: float):
+def choose_color_for_missing_reviews(value: float) -> str:
     if value >= 90:
         return RED1
     if value >= 85:
