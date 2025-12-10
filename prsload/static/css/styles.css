@@ -1,0 +1,68 @@
+/* Custom utility classes for consistent styling */
+
+/* Code block styles */
+.code-yellow { 
+  background-color: #fef3c7; 
+  padding: 0.25rem; 
+  border-radius: 0.25rem; 
+}
+.code-green { 
+  background-color: #d1fae5; 
+  padding: 0.25rem; 
+  border-radius: 0.25rem; 
+}
+.code-red { 
+  background-color: #fee2e2; 
+  padding: 0.25rem; 
+  border-radius: 0.25rem; 
+}
+.code-blue { 
+  background-color: #dbeafe; 
+  padding: 0.25rem; 
+  border-radius: 0.25rem; 
+}
+.code-amber { 
+  background-color: #fde68a; 
+  padding: 0.25rem; 
+  border-radius: 0.25rem; 
+}
+
+/* Info box containers */
+.info-box-yellow { 
+  background-color: #fffbeb; 
+  border: 1px solid #fde047; 
+  border-radius: 0.5rem; 
+  padding: 1.5rem; 
+}
+.info-box-amber { 
+  background-color: #fffbeb; 
+  border: 1px solid #f59e0b; 
+  border-radius: 0.5rem; 
+  padding: 1.5rem; 
+}
+.info-box-green { 
+  background-color: #f0fdf4; 
+  border: 1px solid #bbf7d0; 
+  border-radius: 0.5rem; 
+  padding: 1.5rem; 
+}
+.info-box-red { 
+  background-color: #fef2f2; 
+  border: 1px solid #fecaca; 
+  border-radius: 0.5rem; 
+  padding: 1.5rem; 
+}
+.info-box-blue { 
+  background-color: #eff6ff; 
+  border: 1px solid #bfdbfe; 
+  border-radius: 0.5rem; 
+  padding: 1.5rem; 
+}
+
+/* Nested boxes within info boxes */
+.nested-box-yellow { 
+  background-color: #ffffff; 
+  border: 1px solid #fde047; 
+  border-radius: 0.25rem; 
+  padding: 0.75rem; 
+}

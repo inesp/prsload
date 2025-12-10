@@ -1,143 +1,163 @@
-<!doctype html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Top reviewers</title>
-</head>
+{% extends "base.html" %}
 
-<body>
-  <div class="container p-2">
-    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">PRs stats for the last <b>{{ num_of_days }} days</b>.
-      <br>Oldest merge date: <code>{{ oldest_valid_merge_date }}</code>.
-      <br>Oldest create date: <code>{{ oldest_valid_create_date }}</code>.
-    </h1>
+{% set header_extra %}
+<div class="mt-4 space-y-1">
+  <div>Oldest merge date: <code class="bg-gray-100 px-2 py-1 rounded">{{ settings.OLDEST_VALID_PR_MERGE_DATE }}</code></div>
+  <div>Oldest create date: <code class="bg-gray-100 px-2 py-1 rounded">{{ settings.OLDEST_VALID_PR_CREATE_DATE }}</code></div>
+</div>
+{% endset %}
 
-    <h2 class="py-6 text-2xl">Reviewers sorted by num of approved/rejected PRs</h2>
-    <p>Scale:</p>
-    <div class="flex">
+{% block content %}
+<div class="mb-6 flex justify-start">
+  <button id="expand-all-btn" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 text-sm font-medium flex items-center gap-2">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+    </svg>
+    Show All Usernames
+  </button>
+</div>
+<!-- Reviewers by Load -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+  <h2 class="text-xl font-semibold text-gray-900 mb-4">Reviewers by Number of Finished PRs</h2>
+  
+  <!-- Color Scale -->
+  <div class="mb-4">
+    <p class="text-sm text-gray-600 mb-2">Color scale:</p>
+    <div class="flex rounded overflow-hidden">
       {% for color in scale_colors %}
-        <div class="bg-[{{ color }}] w-24">&nbsp;</div>
+        <div class="bg-[{{ color }}] h-4 flex-1">&nbsp;</div>
       {% endfor %}
     </div>
-    <table class="table-auto">
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse">
       <thead>
-        <tr>
-          <th class="border-collapse border border-slate-400 p-1">Reviewer</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of approved/disapproved PRs</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of commented PRs</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of requested PRs</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of PRs with<br>no review response</th>
+        <tr class="bg-gray-50">
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Reviewer</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Approved/Rejected</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Commented</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Requested</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">No Response</th>
         </tr>
       </thead>
       <tbody>
-        {% for reviewer_data in reviewers_with_most_prs %}
-          <tr>
-            <td class="border-collapse border border-slate-400 p-1"><details><summary>...</summary>{{ reviewer_data.user }}</details></td>
-            <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_review_finished | length }}</td>
-            <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_commented | length }}</td>
-            <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.prs_where_review_was_requested | length }}</td>
-            <td class="border-collapse border border-slate-400 p-1">
-              {{ reviewer_data.prs_where_no_review_response | length }} <small>PR(s)</small> = <span
-                >{{ reviewer_data.percentage_of_prs_with_missing_review | colorful_percentage_for_missing_reviews | safe }}%</span>
+        {% for one_reviewer_workload in workload_stats %}
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 p-3">
+              <details class="cursor-pointer">
+                <summary class="text-blue-600 hover:text-blue-800 username-summary">Show username</summary>
+                <span class="text-sm text-gray-700">{{ one_reviewer_workload.user }}</span>
+              </details>
+            </td>
+            <td class="border border-gray-300 p-3">{{ one_reviewer_workload.num_of_finished_reviews }}</td>
+            <td class="border border-gray-300 p-3">{{ one_reviewer_workload.prs_where_commented | length }}</td>
+            <td class="border border-gray-300 p-3">{{ one_reviewer_workload.prs_where_review_was_requested | length }}</td>
+            <td class="border border-gray-300 p-3">
+              <div class="">
+                {{ one_reviewer_workload.prs_where_no_review_response | length }} PR(s) =
+                {{ one_reviewer_workload.percentage_of_prs_with_missing_review | colorful_percentage_for_missing_reviews | safe }}
+
                 <details>
                   <summary><small>List of PRS:</small></summary>
                   <ul>
-                      {% for pr_uid in reviewer_data.prs_where_no_review_response %}
-                        <li>{{ pr_uid }}</li>
-                      {% endfor %}
-                    </ul>
+                    {% for pr_slug in one_reviewer_workload.prs_where_no_review_response %}
+                      <li><a href="https://github.com/{{ pr_slug }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">{{ pr_slug }}</a></li>
+                    {% endfor %}
+                  </ul>
                 </details>
+              </div>
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
 
-
-    <h2 class="py-6 px-2 text-2xl">Reviewers by their response time</h2>
-    <p>Scale:</p>
-    <div class="flex">
+<!-- Reviewers by Speed -->
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+  <h2 class="text-xl font-semibold text-gray-900 mb-4">Reviewers by Response Time</h2>
+  
+  <!-- Color Scale -->
+  <div class="mb-4">
+    <p class="text-sm text-gray-600 mb-2">Color scale:</p>
+    <div class="flex rounded overflow-hidden">
       {% for color in scale_colors %}
-        <div class="bg-[{{ color }}] w-24">&nbsp;</div>
+        <div class="bg-[{{ color }}] h-4 flex-1">&nbsp;</div>
       {% endfor %}
     </div>
-    <table class="table-auto">
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full border-collapse">
       <thead>
-        <tr>
-          <th class="border-collapse border border-slate-400 p-1">Reviewer</th>
-          <th class="border-collapse border border-slate-400 p-1">Avg response time (review request - comment) - only includes PRs when they DID review</th>
-          <th class="border-collapse border border-slate-400 p-1">num of reviews < 5 mins</th>
-          <th class="border-collapse border border-slate-400 p-1">num of reviews < 15 mins</th>
-          <th class="border-collapse border border-slate-400 p-1">num of reviews < 30 mins</th>
-          <th class="border-collapse border border-slate-400 p-1">num of reviews < 1h</th>
-          <th class="border-collapse border border-slate-400 p-1">num of reviews < 2h</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of PRs that weren't reviewed</th>
-          <th class="border-collapse border border-slate-400 p-1">Num of PRs reviewed</th>
+        <tr class="bg-gray-50">
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Reviewer</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Median Response Time</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Total Reviews</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Reviews ≤ 2h</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Reviews ≤ 4h</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">Reviews ≤ 1d</th>
+          <th class="border border-gray-300 p-3 text-left text-sm font-semibold">No Review</th>
         </tr>
       </thead>
       <tbody>
-        {% for reviewer_data in fastest_reviewers %}
-            <tr>
-              <td class="border-collapse border border-slate-400 p-1">
-                <details><summary>...</summary>{{ reviewer_data.user }}</details>
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                {{ reviewer_data.avg_reaction_time_str }}
-
-                {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(-1) %}
-                   <br>Reviewed PRs: {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
-                 {% endwith %}
-
-                <details>
-                  <summary><small>actual seconds:</small></summary>
-                  <small>
-                  {% for review_time in reviewer_data.sorted_reaction_times %}{{ review_time.total_seconds() | int }}{{ ", " if not loop.last else "" }}{% endfor %}
-                </small>
-                </details>
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(5) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
-                 {% endwith %}
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(15) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
-                 {% endwith %}
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(30) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
-                 {% endwith %}
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(60) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
-                 {% endwith %}
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                 {% with num_and_percentage=reviewer_data.get_num_of_reviews_below(120) %}
-                   {{ num_and_percentage[0] }}, {{ num_and_percentage[1] | colorful_percentage_for_review_time | safe }}
-                 {% endwith %}
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">
-                {{ reviewer_data.prs_with_no_review | length }}
-                <details>
-                  <summary><small>List of PRS:</small></summary>
-                  <ul>
-                      {% for pr_uid in reviewer_data.prs_with_no_review %}
-                        <li>{{ pr_uid }}</li>
-                      {% endfor %}
-                    </ul>
-                </details>
-              </td>
-              <td class="border-collapse border border-slate-400 p-1">{{ reviewer_data.num_of_prs_reviewed }}</td>
-            </tr>
+        {% for one_reviewer_speed in speed_stats %}
+          <tr class="hover:bg-gray-50">
+            <td class="border border-gray-300 p-3">
+              <details class="cursor-pointer">
+                <summary class="text-blue-600 hover:text-blue-800 username-summary">Show username</summary>
+                <span class="text-sm text-gray-700">{{ one_reviewer_speed.user }}</span>
+              </details>
+            </td>
+            <td class="border border-gray-300 p-3 text-center">
+              <code class="bg-gray-100 px-2 py-1 rounded text-xs">{{ one_reviewer_speed.avg_reaction_time_str }}</code>
+            </td>
+            <td class="border border-gray-300 p-3 text-center">{{ one_reviewer_speed.num_of_prs_reviewed }}</td>
+            <td class="border border-gray-300 p-3 text-center">
+              {% set count_2h, percent_2h = one_reviewer_speed.get_num_of_reviews_below(120) %}
+              {{ count_2h }} = {{ percent_2h | colorful_percentage_for_review_time | safe }}
+            </td>
+            <td class="border border-gray-300 p-3 text-center">
+              {% set count_4h, percent_4h = one_reviewer_speed.get_num_of_reviews_below(240) %}
+              {{ count_4h }} = {{ percent_4h | colorful_percentage_for_review_time | safe }}
+            </td>
+            <td class="border border-gray-300 p-3 text-center">
+              {% set count_1d, percent_1d = one_reviewer_speed.get_num_of_reviews_below(1440) %}
+              {{ count_1d }} = {{ percent_1d | colorful_percentage_for_review_time | safe }}
+            </td>
+            <td class="border border-gray-300 p-3 text-center">{{ one_reviewer_speed.prs_with_no_review | length }}</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+</div>
+{% endblock %}
 
-</body>
-
+{% block extra_js %}
+<style>
+details[open] .username-summary {
+  display: none;
+}
+</style>
+<script>
+document.getElementById('expand-all-btn').addEventListener('click', function() {
+  const allDetails = document.querySelectorAll('details');
+  const usernameDetails = Array.from(allDetails).filter(detail => {
+    const summary = detail.querySelector('summary');
+    return summary && summary.textContent.includes('Show username');
+  });
+  
+  const allOpen = usernameDetails.every(detail => detail.open);
+  
+  usernameDetails.forEach(detail => {
+    detail.open = !allOpen;
+  });
+  
+  this.textContent = allOpen ? 'Show All Usernames' : 'Hide All Usernames';
+});
+</script>
+{% endblock %}

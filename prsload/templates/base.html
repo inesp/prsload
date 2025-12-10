@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <title>{% block title %}{{ title or "PR Analytics" }}{% endblock %}</title>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto py-8 px-4">
+    {% block header %}
+      {% include 'components/header.html' %}
+    {% endblock %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% block footer %}
+      <div class="text-center mt-8 pt-6 border-t border-gray-200">
+        <p class="text-sm text-gray-500">PR Analytics - Analyze the load of code review</p>
+      </div>
+    {% endblock %}
+  </div>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

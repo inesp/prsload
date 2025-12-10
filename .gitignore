@@ -85,8 +85,9 @@ celerybeat-schedule
 # SageMath parsed files
 *.sage.py
 
-# settings
-settings.py
+# Environment variables and config
+.env
+pr-analytics.yml
 
 
 # virtualenv
@@ -111,3 +112,7 @@ tmp
 coverage-reports
 coverage*
 .DS_Store
+
+# DuckDB database files
+*.duckdb
+prs_analytics.duckdb

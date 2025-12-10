@@ -1,26 +1,67 @@
-<!doctype html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <title>Errors in GH respone</title>
-</head>
+{% extends "base.html" %}
 
-<body>
-  <div class="container p-2">
-    <h1 class="border-4 border-[#c026d3] px-3 py-6 text-2xl">Couldn't load PRs, got an error from GitHub</h1>
+{% block title %}GitHub API Error - PR Analytics{% endblock %}
 
-    <p class="py-6 text-xl">
-      {{ error_msg }}
-      <code>{{ errors }}</code>
-    </p>
 
-    <p>Query we ran:</p>
-    <code>{{ query }}</code>
-    <p>Variables:</p>
-    <code>{{ variables }}</code>
+{% block content %}
+<!-- Navigation -->
+<div class="mb-6">
+  <a href="/" class="inline-flex items-center text-gray-600 hover:text-gray-900 text-sm">
+    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+    </svg>
+    Back to System Health
+  </a>
+</div>
 
+<!-- Error Details -->
+<div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+  <div class="flex items-start">
+    <svg class="w-6 h-6 text-red-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+    </svg>
+    <div class="flex-grow">
+      <h2 class="text-lg font-semibold text-red-900 mb-2">GitHub API Error</h2>
+      <p class="text-red-800 mb-4">{{ error_msg }}</p>
+      
+      {% if errors %}
+        <div class="bg-red-100 border border-red-300 rounded p-3 mb-4">
+          <h3 class="text-red-900 font-medium mb-2">Error Details:</h3>
+          <pre class="text-sm text-red-800 whitespace-pre-wrap">{{ errors }}</pre>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Debug Information -->
+<div class="grid md:grid-cols-2 gap-6">
+  <!-- Query Information -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">GraphQL Query</h3>
+    <div class="bg-gray-100 rounded p-3 overflow-auto">
+      <pre class="text-sm text-gray-800">{{ query }}</pre>
+    </div>
   </div>
 
-</body>
+  <!-- Variables -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Query Variables</h3>
+    <div class="bg-gray-100 rounded p-3 overflow-auto">
+      <pre class="text-sm text-gray-800">{{ variables or 'No variables' }}</pre>
+    </div>
+  </div>
+</div>
 
+<!-- Troubleshooting -->
+<div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-8">
+  <h3 class="text-blue-900 font-semibold mb-3">Troubleshooting Steps</h3>
+  <ul class="text-blue-800 space-y-2 list-disc list-inside">
+    <li>Check your GitHub API token in <code class="bg-blue-200 text-blue-900 px-2 py-1 rounded">settings.py</code></li>
+    <li>Ensure the token has the required permissions for repository access</li>
+    <li>Verify the token hasn't expired</li>
+    <li>Check if you've hit GitHub API rate limits</li>
+    <li>Try refreshing the page after a few minutes</li>
+  </ul>
+</div>
+{% endblock %}

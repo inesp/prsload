@@ -4,7 +4,7 @@ from typing import Any
 array_index = re.compile(r"\[(-)?\d]")
 
 
-def safe_traverse(data: dict | list, path: str, backup_value=None) -> Any:
+def safe_traverse(data: dict[str, Any] | list[Any], path: str, backup_value: Any = None) -> Any:
     """Get a nested value from the dictionary.
     Suppress all Key and Value errors and return backup_value,
     if the real value cannot be found.

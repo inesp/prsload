@@ -2,14 +2,13 @@ services:
   web:
     build:
       context: .
+    env_file: .env
     environment:
       FLASK_DEBUG: "on"
       FLASK_APP: ./prsload/app.py
     restart: always
     ports:
      - "1234:1234"
-    volumes: ['.:/app']
-  redis:
-    image: "redis:alpine"
-    ports:
-      - 6379:6379
+    volumes: 
+      - '.:/app'
+      - './prs_analytics.duckdb:/app/prs_analytics.duckdb'  # Persist DuckDB file

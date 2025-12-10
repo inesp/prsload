@@ -8,6 +8,8 @@ charset-normalizer==3.4.1
     # via requests
 click==8.1.8
     # via flask
+duckdb==1.4.2
+    # via prsload (pyproject.toml)
 flask==3.1.0
     # via prsload (pyproject.toml)
 idna==3.10
@@ -20,11 +22,7 @@ markupsafe==3.0.2
     # via
     #   jinja2
     #   werkzeug
-marshmallow==3.23.2
-    # via prsload (pyproject.toml)
-packaging==24.2
-    # via marshmallow
-redis==5.2.1
+pyyaml==6.0.3
     # via prsload (pyproject.toml)
 requests==2.32.3
     # via prsload (pyproject.toml)

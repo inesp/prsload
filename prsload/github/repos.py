@@ -1,7 +1,7 @@
+from collections.abc import Generator
 from dataclasses import dataclass
-from typing import Generator
 
-from prsload.github import github
+from prsload.github import client
 from prsload.github.gql_utils import extract_gql_query_from_file
 
 
@@ -15,11 +15,9 @@ class Repo:
         return f"{self.owner}/{self.name}"
 
 
-def fetch_all_repos(user_login_name: str) -> Generator[Repo, None, None]:
+def fetch_all_repos(user_login_name: str) -> Generator[Repo]:
     repo_query: str = extract_gql_query_from_file("prsload/github/repos.graphql")
-    response = github.post_gql_query(
-        query=repo_query, variables={"login": user_login_name}
-    )
+    response = client.post_gql_query(query=repo_query, variables={"login": user_login_name})
 
     raw_repos: list[dict] = response.data["organization"]["repositories"]["nodes"]
 
