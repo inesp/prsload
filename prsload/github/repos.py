@@ -27,5 +27,5 @@ def fetch_all_repos(user_login_name: str) -> Generator[Repo]:
         yield Repo(
             owner=repo_data["owner"]["login"],
             name=repo_data["name"],
-            total_prs = safe_traverse(repo_data, "pullRequests.totalCount")
+            total_prs=safe_traverse(repo_data, "pullRequests.totalCount"),
         )

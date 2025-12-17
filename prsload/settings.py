@@ -65,11 +65,9 @@ def _parse_vacation_data(vacation_config: dict) -> dict[str, list[tuple[datetime
     raw_user_vacations: dict | list[dict]
     for user, raw_user_vacations in vacation_config.items():
 
-        user_vacations: list[dict]
-        if isinstance(raw_user_vacations, dict):
-            user_vacations = [raw_user_vacations]
-        else:
-            user_vacations = raw_user_vacations
+        user_vacations: list[dict] = (
+            [raw_user_vacations] if isinstance(raw_user_vacations, dict) else raw_user_vacations
+        )
 
         for vacation_period in user_vacations:
             start_dt = datetime.fromisoformat(vacation_period["start"].replace("Z", "+00:00"))

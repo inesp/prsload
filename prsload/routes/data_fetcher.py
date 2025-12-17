@@ -31,7 +31,7 @@ class PRCleaner:
     @classmethod
     def is_pr_too_old(cls, pr: PR, settings: Settings) -> bool:
         merge_too_old = bool(pr.merged_at and pr.merged_at < settings.OLDEST_VALID_PR_MERGE_DATE)
-        create_too_old = bool( pr.created_at < settings.OLDEST_VALID_PR_CREATE_DATE)
+        create_too_old = bool(pr.created_at < settings.OLDEST_VALID_PR_CREATE_DATE)
         return merge_too_old and create_too_old
 
     @classmethod
@@ -53,7 +53,9 @@ class PRCleaner:
 
     @staticmethod
     def _was_reviewer_on_vacation(review: PRReview, settings: Settings) -> bool:
-        if (review_requested := review.requested_at) and (user_vacation_periods := settings.VACATION.get(review.user)):
+        if (review_requested := review.requested_at) and (
+            user_vacation_periods := settings.VACATION.get(review.user)
+        ):
             for vacation_start, vacation_end in user_vacation_periods:
                 if vacation_start <= review_requested <= vacation_end:
                     logger.info(f"Vacation time, skipping, {review.user}, {review.requested_at}")
