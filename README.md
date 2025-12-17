@@ -15,10 +15,19 @@ Get your [API access token from GitHub](https://github.com/settings/tokens).
 make build up
 ```
 
-3. Open the page [http://127.0.0.1:1234/top_reviewers](http://127.0.0.1:1234/top_reviewers).
+3. Open home at: [http://127.0.0.1:1234/](http://127.0.0.1:1234/) and check that settings are working. 
+
+![home-page.png](./assets/home_page.png)
+
+4. Open DB overview [http://localhost:1234/db_view](http://localhost:1234/db_view) and click "Sync Now".
+![db.png](./assets/db.png)
+
+5. Wait for a loooooooooooooooooong time.
+
+6. Open the page [http://127.0.0.1:1234/top_reviewers](http://127.0.0.1:1234/top_reviewers).
 
   You should see something like:
-  ![prs-load.png](./assets/prs-load.png)
+  ![top_reviewers.png](./assets/top_reviewers.png)
 
 ## How it works
 
