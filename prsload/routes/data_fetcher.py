@@ -19,18 +19,21 @@ data_fetcher_bp = Blueprint("data_fetcher", __name__)
 @data_fetcher_bp.route("/db_view")
 def db_view():
     logger.info("Viewing PR analytics from DuckDB")
-    stats: PRStats = duckdb_client.get_pr_stats()
-    return render_template(
-        "data_fetcher.html",
+    return _render_template_data_fetcher(
         title="DB data",
         subtitle="Shows PR data from persistent DuckDB database. Data survives app restarts. "
         "It's stored in prs_analytics.duckdb.",
-        data_from_db=True,
-        stats=stats,
     )
 
 
 class PRCleaner:
+
+    @classmethod
+    def is_pr_too_old(cls, pr: PR, settings: Settings) -> bool:
+        merge_too_old = bool(pr.merged_at and pr.merged_at < settings.OLDEST_VALID_PR_MERGE_DATE)
+        create_too_old = bool(pr.created_at < settings.OLDEST_VALID_PR_CREATE_DATE)
+        return merge_too_old and create_too_old
+
     @classmethod
     def sanitize_pr(cls, pr: PR, settings: Settings) -> PR | None:
         if pr.merged_at and pr.merged_at < settings.OLDEST_VALID_PR_MERGE_DATE:
@@ -50,11 +53,13 @@ class PRCleaner:
 
     @staticmethod
     def _was_reviewer_on_vacation(review: PRReview, settings: Settings) -> bool:
-        if (review_requested := review.requested_at) and (user_vacation_time := settings.VACATION.get(review.user)):
-            vacation_start, vacation_end = user_vacation_time
-            if vacation_start <= review_requested <= vacation_end:
-                logger.info(f"Vacation time, skipping, {review.user}, {review.requested_at}")
-                return True
+        if (review_requested := review.requested_at) and (
+            user_vacation_periods := settings.VACATION.get(review.user)
+        ):
+            for vacation_start, vacation_end in user_vacation_periods:
+                if vacation_start <= review_requested <= vacation_end:
+                    logger.info(f"Vacation time, skipping, {review.user}, {review.requested_at}")
+                    return True
         return False
 
     @staticmethod
@@ -80,9 +85,18 @@ def sync_from_github():
             blocklisted_repos.append(repo.slug)
             continue
 
-        logger.info(f"Syncing PRs from GitHub for repo: {repo.slug}")
+        if repo.total_prs == 0:
+            # logger.info(f"Found repo {repo.slug}, but it has no PRs at all")
+            continue
+
+        logger.info(f"****OK**** Syncing PRs from GitHub for repo: {repo.slug} {repo.total_prs=}")
 
         for raw_pr in github.fetch_prs_with_reviews(repo):
+            if PRCleaner.is_pr_too_old(raw_pr, settings):
+                # Hm... this is just an idea: probably all next PRs will also be too old, so we can stop
+                # fetching for this repo
+                break
+
             pr: PR | None = PRCleaner.sanitize_pr(raw_pr, settings)
             if pr is None:
                 continue
@@ -90,14 +104,10 @@ def sync_from_github():
             synced_prs += 1
 
     logger.info(f"GitHub sync complete. Synced {synced_prs} PRs to DuckDB")
-    stats: PRStats = duckdb_client.get_pr_stats()
 
-    return render_template(
-        "data_fetcher.html",
+    return _render_template_data_fetcher(
         title="GitHub Sync Complete",
         subtitle=f"Synced {synced_prs} PRs from GitHub to persistent DuckDB database.",
-        blocklisted_repos=blocklisted_repos,
-        stats=stats,
     )
 
 
@@ -106,10 +116,30 @@ def recreate_db():
     """Reset all DuckDB tables (drop and recreate)."""
     logger.info("Resetting DuckDB tables")
     duckdb_client.recreate_tables()
-    stats: PRStats = duckdb_client.get_pr_stats()
-    return render_template(
-        "data_fetcher.html",
+    return _render_template_data_fetcher(
         title="Database Reset",
         subtitle="All DuckDB tables have been dropped and recreated. Database is now empty.",
+    )
+
+
+@data_fetcher_bp.route("/delete_all_prs")
+def delete_all_prs():
+    """Delete all PRs and reviews from the database."""
+    logger.info("Deleting all PRs from database")
+    prs_count, reviews_count = duckdb_client.delete_all_prs()
+    return _render_template_data_fetcher(
+        title="All PRs Deleted",
+        subtitle=f"Deleted {prs_count} PRs and {reviews_count} reviews from the database.",
+    )
+
+
+def _render_template_data_fetcher(*, title: str, subtitle: str):
+    stats: PRStats = duckdb_client.get_pr_stats()
+    settings = get_settings()
+    return render_template(
+        "data_fetcher.html",
+        title=title,
+        subtitle=subtitle,
         stats=stats,
+        settings=settings,
     )

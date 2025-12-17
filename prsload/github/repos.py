@@ -1,6 +1,7 @@
 from collections.abc import Generator
 from dataclasses import dataclass
 
+from prsload.dict_utils import safe_traverse
 from prsload.github import client
 from prsload.github.gql_utils import extract_gql_query_from_file
 
@@ -9,6 +10,7 @@ from prsload.github.gql_utils import extract_gql_query_from_file
 class Repo:
     owner: str
     name: str
+    total_prs: int = 0
 
     @property
     def slug(self) -> str:
@@ -25,4 +27,5 @@ def fetch_all_repos(user_login_name: str) -> Generator[Repo]:
         yield Repo(
             owner=repo_data["owner"]["login"],
             name=repo_data["name"],
+            total_prs=safe_traverse(repo_data, "pullRequests.totalCount"),
         )

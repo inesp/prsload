@@ -47,9 +47,7 @@ def fetch_prs_with_reviews(repo: Repo) -> Generator[PR]:
 def _process_one_page_of_prs(response: GHResponse, repo: Repo) -> Generator[PR]:
     raw_prs: list[dict] = response.data["repository"]["pullRequests"]["nodes"]
 
-    num_of_prs: int = response.data["repository"]["pullRequests"]["totalCount"]
-
-    logger.info(f"Found {num_of_prs} PRs for {repo.slug}.")
+    logger.info(f"Processing PRs for {repo.slug}.")
 
     for pr_data in raw_prs:
         merged_at: str = pr_data["mergedAt"]
@@ -67,13 +65,13 @@ def _process_one_page_of_prs(response: GHResponse, repo: Repo) -> Generator[PR]:
             merged_at=(parse_str_to_date(merged_at or closed_at) if merged_at or closed_at else None),
         )
 
-        logger.info(f"Found PR(number={pr_number}), url={pr.url}")
+        logger.info(f"Found PR(number={pr_number}), url={pr.url}, {pr.merged_at=}")
 
-        num_of_requested_reviews = pr_data["timelineItems"]["totalCount"]
-        if num_of_requested_reviews > 100:
+        has_too_many_timeline_items = pr_data["timelineItems"]["pageInfo"]["hasNextPage"]
+        if has_too_many_timeline_items > 100:
             logger.warning(
                 f"We never implemented a solution for when timelineItems.totalCount > 100. "
-                f"{num_of_requested_reviews=} {repo.slug} {pr_number=}"
+                f"{repo.slug} {pr_number=}"
             )
 
         reviews_by_user: dict[str, PRReview] = {}
@@ -90,11 +88,10 @@ def _process_one_page_of_prs(response: GHResponse, repo: Repo) -> Generator[PR]:
             else:
                 reviews_by_user[user] = PRReview(user=user, requested_at=requested_at)
 
-        num_of_reviews = pr_data["reviews"]["totalCount"]
-        if num_of_reviews > 100:
+        has_too_many_reviews = pr_data["reviews"]["pageInfo"]["hasNextPage"]
+        if has_too_many_reviews > 100:
             logger.warning(
-                f"We never implemented a solution for when the reviews.totalCount > 100. "
-                f"{num_of_reviews=}  {repo.slug} {pr_number=}"
+                f"We never implemented a solution for when the reviews.totalCount > 100. " f"{repo.slug} {pr_number=}"
             )
 
         for raw_review in pr_data["reviews"]["nodes"]:

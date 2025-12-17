@@ -6,7 +6,6 @@
 ```bash
 GH_API_TOKEN=your_github_token_here
 GH_LOGIN=your_github_username
-NUM_OF_DAYS=180
 ```
 
 Get your [API access token from GitHub](https://github.com/settings/tokens).
