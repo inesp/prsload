@@ -27,6 +27,13 @@ def db_view():
 
 
 class PRCleaner:
+
+    @classmethod
+    def is_pr_too_old(cls, pr: PR, settings: Settings) -> bool:
+        merge_too_old = bool(pr.merged_at and pr.merged_at < settings.OLDEST_VALID_PR_MERGE_DATE)
+        create_too_old = bool( pr.created_at < settings.OLDEST_VALID_PR_CREATE_DATE)
+        return merge_too_old and create_too_old
+
     @classmethod
     def sanitize_pr(cls, pr: PR, settings: Settings) -> PR | None:
         if pr.merged_at and pr.merged_at < settings.OLDEST_VALID_PR_MERGE_DATE:
@@ -76,9 +83,18 @@ def sync_from_github():
             blocklisted_repos.append(repo.slug)
             continue
 
-        logger.info(f"Syncing PRs from GitHub for repo: {repo.slug}")
+        if repo.total_prs == 0:
+            # logger.info(f"Found repo {repo.slug}, but it has no PRs at all")
+            continue
+
+        logger.info(f"****OK**** Syncing PRs from GitHub for repo: {repo.slug} {repo.total_prs=}")
 
         for raw_pr in github.fetch_prs_with_reviews(repo):
+            if PRCleaner.is_pr_too_old(raw_pr, settings):
+                # Hm... this is just an idea: probably all next PRs will also be too old, so we can stop
+                # fetching for this repo
+                break
+
             pr: PR | None = PRCleaner.sanitize_pr(raw_pr, settings)
             if pr is None:
                 continue

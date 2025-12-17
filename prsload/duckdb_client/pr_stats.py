@@ -37,7 +37,7 @@ def get_pr_stats() -> PRStats:
               SELECT repo_slug, COUNT(*) as pr_count
               FROM prs
               GROUP BY repo_slug
-              ORDER BY pr_count DESC
+              ORDER BY pr_count DESC, repo_slug ASC
               """
             ).fetchall()
 
