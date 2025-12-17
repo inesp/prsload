@@ -1,6 +1,7 @@
 import dataclasses
 import logging
 import os
+from collections import defaultdict
 from dataclasses import dataclass
 from datetime import UTC
 from datetime import datetime
@@ -27,7 +28,7 @@ class Settings:
     BLOCKLISTED_REPOS: list[str]
     REVIEWERS_TO_IGNORE: list[str]
     PR_AUTHORS_TO_IGNORE: list[str]
-    VACATION: dict[str, tuple[datetime, datetime]]
+    VACATION: dict[str, list[tuple[datetime, datetime]]]
 
     @property
     def as_dict(self) -> dict[str, str | int | list[str]]:
@@ -59,13 +60,22 @@ def _load_yaml_config() -> dict[str, Any]:
         return {}
 
 
-def _parse_vacation_data(vacation_config: dict) -> dict:
-    vacation = {}
-    for user, dates in vacation_config.items():
-        if isinstance(dates, dict) and "start" in dates and "end" in dates:
-            start_dt = datetime.fromisoformat(dates["start"].replace("Z", "+00:00"))
-            end_dt = datetime.fromisoformat(dates["end"].replace("Z", "+00:00"))
-            vacation[user] = (start_dt, end_dt)
+def _parse_vacation_data(vacation_config: dict) -> dict[str, list[tuple[datetime, datetime]]]:
+    vacation: dict[str, list[tuple[datetime, datetime]]] = defaultdict(list)
+    raw_user_vacations: dict | list[dict]
+    for user, raw_user_vacations in vacation_config.items():
+
+        user_vacations: list[dict]
+        if isinstance(raw_user_vacations, dict):
+            user_vacations = [raw_user_vacations]
+        else:
+            user_vacations = raw_user_vacations
+
+        for vacation_period in user_vacations:
+            start_dt = datetime.fromisoformat(vacation_period["start"].replace("Z", "+00:00"))
+            end_dt = datetime.fromisoformat(vacation_period["end"].replace("Z", "+00:00"))
+            vacation[user].append((start_dt, end_dt))
+
     return vacation
 
 

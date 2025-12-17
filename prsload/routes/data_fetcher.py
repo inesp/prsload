@@ -53,11 +53,11 @@ class PRCleaner:
 
     @staticmethod
     def _was_reviewer_on_vacation(review: PRReview, settings: Settings) -> bool:
-        if (review_requested := review.requested_at) and (user_vacation_time := settings.VACATION.get(review.user)):
-            vacation_start, vacation_end = user_vacation_time
-            if vacation_start <= review_requested <= vacation_end:
-                logger.info(f"Vacation time, skipping, {review.user}, {review.requested_at}")
-                return True
+        if (review_requested := review.requested_at) and (user_vacation_periods := settings.VACATION.get(review.user)):
+            for vacation_start, vacation_end in user_vacation_periods:
+                if vacation_start <= review_requested <= vacation_end:
+                    logger.info(f"Vacation time, skipping, {review.user}, {review.requested_at}")
+                    return True
         return False
 
     @staticmethod
