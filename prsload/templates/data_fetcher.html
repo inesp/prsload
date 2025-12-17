@@ -8,13 +8,21 @@
     <div class="flex justify-between items-start mb-4">
       <h2 class="text-xl font-semibold text-gray-900">Summary</h2>
       <div class="text-right">
-        <a href="/sync_from_github" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-          Sync Now
-        </a>
-        <p class="text-xs text-gray-500 mt-1">Fetches new PR events, does NOT delete existing data.</p>
+        <div class="space-x-2">
+          <a href="/sync_from_github" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Sync Now
+          </a>
+          <a href="/delete_all_prs" onclick="return confirm('Are you sure? This will delete ALL PRs and reviews from the database.')" class="inline-flex items-center px-3 py-1.5 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            Delete fetched data
+          </a>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Sync adds new data, it does NOT delete existing data • Delete removes all stored data</p>
       </div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

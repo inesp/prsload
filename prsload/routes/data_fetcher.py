@@ -19,16 +19,10 @@ data_fetcher_bp = Blueprint("data_fetcher", __name__)
 @data_fetcher_bp.route("/db_view")
 def db_view():
     logger.info("Viewing PR analytics from DuckDB")
-    stats: PRStats = duckdb_client.get_pr_stats()
-    settings = get_settings()
-    return render_template(
-        "data_fetcher.html",
+    return _render_template_data_fetcher(
         title="DB data",
         subtitle="Shows PR data from persistent DuckDB database. Data survives app restarts. "
         "It's stored in prs_analytics.duckdb.",
-        data_from_db=True,
-        stats=stats,
-        settings=settings,
     )
 
 
@@ -92,15 +86,10 @@ def sync_from_github():
             synced_prs += 1
 
     logger.info(f"GitHub sync complete. Synced {synced_prs} PRs to DuckDB")
-    stats: PRStats = duckdb_client.get_pr_stats()
 
-    return render_template(
-        "data_fetcher.html",
+    return _render_template_data_fetcher(
         title="GitHub Sync Complete",
         subtitle=f"Synced {synced_prs} PRs from GitHub to persistent DuckDB database.",
-        blocklisted_repos=blocklisted_repos,
-        stats=stats,
-        settings=settings,
     )
 
 
@@ -109,12 +98,30 @@ def recreate_db():
     """Reset all DuckDB tables (drop and recreate)."""
     logger.info("Resetting DuckDB tables")
     duckdb_client.recreate_tables()
+    return _render_template_data_fetcher(
+        title="Database Reset",
+        subtitle="All DuckDB tables have been dropped and recreated. Database is now empty.",
+    )
+
+
+@data_fetcher_bp.route("/delete_all_prs")
+def delete_all_prs():
+    """Delete all PRs and reviews from the database."""
+    logger.info("Deleting all PRs from database")
+    prs_count, reviews_count = duckdb_client.delete_all_prs()
+    return _render_template_data_fetcher(
+        title="All PRs Deleted",
+        subtitle=f"Deleted {prs_count} PRs and {reviews_count} reviews from the database.",
+    )
+
+
+def _render_template_data_fetcher(*, title: str, subtitle: str):
     stats: PRStats = duckdb_client.get_pr_stats()
     settings = get_settings()
     return render_template(
         "data_fetcher.html",
-        title="Database Reset",
-        subtitle="All DuckDB tables have been dropped and recreated. Database is now empty.",
+        title=title,
+        subtitle=subtitle,
         stats=stats,
         settings=settings,
     )

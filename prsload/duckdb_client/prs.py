@@ -87,3 +87,18 @@ def store_pr(pr: PR):
     pr_id = _insert_pr(pr)
     _insert_reviews(pr, pr_id)
     logger.debug(f"Stored complete PR {pr.repo_slug}#{pr.number} with {len(pr.reviews)} reviews")
+
+
+def delete_all_prs():
+    """Delete all PRs and reviews from the database."""
+    with get_connection() as conn:
+        # Delete all reviews first (foreign key constraint)
+        reviews_count = conn.execute("SELECT COUNT(*) FROM reviews").fetchone()[0]
+        conn.execute("DELETE FROM reviews")
+
+        # Delete all PRs
+        prs_count = conn.execute("SELECT COUNT(*) FROM prs").fetchone()[0]
+        conn.execute("DELETE FROM prs")
+
+        logger.info(f"Deleted {prs_count} PRs and {reviews_count} reviews from database")
+        return prs_count, reviews_count
