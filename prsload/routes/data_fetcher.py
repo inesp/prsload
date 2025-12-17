@@ -20,6 +20,7 @@ data_fetcher_bp = Blueprint("data_fetcher", __name__)
 def db_view():
     logger.info("Viewing PR analytics from DuckDB")
     stats: PRStats = duckdb_client.get_pr_stats()
+    settings = get_settings()
     return render_template(
         "data_fetcher.html",
         title="DB data",
@@ -27,6 +28,7 @@ def db_view():
         "It's stored in prs_analytics.duckdb.",
         data_from_db=True,
         stats=stats,
+        settings=settings,
     )
 
 
@@ -98,6 +100,7 @@ def sync_from_github():
         subtitle=f"Synced {synced_prs} PRs from GitHub to persistent DuckDB database.",
         blocklisted_repos=blocklisted_repos,
         stats=stats,
+        settings=settings,
     )
 
 
@@ -107,9 +110,11 @@ def recreate_db():
     logger.info("Resetting DuckDB tables")
     duckdb_client.recreate_tables()
     stats: PRStats = duckdb_client.get_pr_stats()
+    settings = get_settings()
     return render_template(
         "data_fetcher.html",
         title="Database Reset",
         subtitle="All DuckDB tables have been dropped and recreated. Database is now empty.",
         stats=stats,
+        settings=settings,
     )
