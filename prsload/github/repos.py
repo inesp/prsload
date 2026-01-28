@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from prsload.dict_utils import safe_traverse
 from prsload.github import client
 from prsload.github.gql_utils import extract_gql_query_from_file
+from prsload.settings import get_settings
 
 
 @dataclass(kw_only=True)
@@ -17,8 +18,9 @@ class Repo:
         return f"{self.owner}/{self.name}"
 
 
-def fetch_all_repos(user_login_name: str) -> Generator[Repo]:
+def fetch_all_repos() -> Generator[Repo]:
     repo_query: str = extract_gql_query_from_file("prsload/github/repos.graphql")
+    user_login_name = get_settings().GH_TOKEN
     response = client.post_gql_query(query=repo_query, variables={"login": user_login_name})
 
     raw_repos: list[dict] = response.data["organization"]["repositories"]["nodes"]

@@ -80,7 +80,7 @@ def sync_from_github():
 
     logger.info(f"Starting GitHub sync for all repositories {settings.NUM_OF_DAYS=} {settings.GH_LOGIN=}")
 
-    for repo in github.fetch_all_repos(settings.GH_LOGIN):
+    for repo in github.fetch_all_repos():
         if repo.slug in settings.BLOCKLISTED_REPOS:
             blocklisted_repos.append(repo.slug)
             continue
