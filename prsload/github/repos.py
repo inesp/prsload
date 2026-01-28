@@ -20,7 +20,7 @@ class Repo:
 
 def fetch_all_repos() -> Generator[Repo]:
     repo_query: str = extract_gql_query_from_file("prsload/github/repos.graphql")
-    user_login_name = get_settings().GH_TOKEN
+    user_login_name = get_settings().GH_LOGIN
     response = client.post_gql_query(query=repo_query, variables={"login": user_login_name})
 
     raw_repos: list[dict] = response.data["organization"]["repositories"]["nodes"]
