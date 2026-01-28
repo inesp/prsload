@@ -87,7 +87,7 @@ celerybeat-schedule
 
 # Environment variables and config
 .env
-pr-analytics.yml
+config.yml
 
 
 # virtualenv

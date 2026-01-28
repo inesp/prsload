@@ -1,6 +1,3 @@
-# PR Analytics Configuration Template
-# Copy this to pr-analytics.yml and customize for your team
-
 analysis:
   num_of_days: 180
 

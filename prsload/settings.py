@@ -17,7 +17,7 @@ from prsload.exceptions import SettingsError
 
 logger = logging.getLogger(__name__)
 
-_CONFIG_FILE_NAME = "pr-analytics.yml"
+_CONFIG_FILE_NAME = "config.yml"
 
 
 @dataclass
