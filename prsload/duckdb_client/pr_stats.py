@@ -22,24 +22,20 @@ def get_pr_stats() -> PRStats:
     with get_connection() as conn:
         try:
             # Total PRs and repos
-            result = conn.execute(
-                """
+            result = conn.execute("""
               SELECT COUNT(*) as total_prs, COUNT(DISTINCT repo_slug) as total_repos
               FROM prs
-            """
-            ).fetchone()
+            """).fetchone()
 
             total_prs, total_repos = result
 
             # PRs by repo
-            repo_stats = conn.execute(
-                """
+            repo_stats = conn.execute("""
               SELECT repo_slug, COUNT(*) as pr_count
               FROM prs
               GROUP BY repo_slug
               ORDER BY pr_count DESC, repo_slug ASC
-              """
-            ).fetchall()
+              """).fetchall()
 
             # Latest sync time (most recent PR created_at)
             latest_sync = conn.execute("""SELECT MAX(created_at) FROM prs""").fetchone()[0]

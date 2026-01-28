@@ -91,7 +91,7 @@ def _process_one_page_of_prs(response: GHResponse, repo: Repo) -> Generator[PR]:
         has_too_many_reviews = pr_data["reviews"]["pageInfo"]["hasNextPage"]
         if has_too_many_reviews > 100:
             logger.warning(
-                f"We never implemented a solution for when the reviews.totalCount > 100. " f"{repo.slug} {pr_number=}"
+                f"We never implemented a solution for when the reviews.totalCount > 100. {repo.slug} {pr_number=}"
             )
 
         for raw_review in pr_data["reviews"]["nodes"]:

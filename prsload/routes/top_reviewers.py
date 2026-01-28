@@ -57,8 +57,7 @@ def _get_workload_stats() -> list[WorkloadForUser]:
     reviewers = []
 
     with get_connection() as conn:
-        result = conn.execute(
-            """
+        result = conn.execute("""
             SELECT
                 r.reviewer,
                 -- PRs where review was requested (where reviewer is not null and requested_at is not null)
@@ -73,8 +72,7 @@ def _get_workload_stats() -> list[WorkloadForUser]:
             JOIN prs p ON r.pr_id = p.id
             WHERE r.reviewer IS NOT NULL
             GROUP BY r.reviewer
-            """  # noqa: E501
-        ).fetchall()
+            """).fetchall()  # noqa: E501
 
         for row in result:
             reviewer, requested_ids, commented_ids, finished_ids, no_response_ids = row
@@ -146,8 +144,7 @@ class SpeedForUser:
 def _get_speed_stats() -> list[SpeedForUser]:
     speed_stats: list[SpeedForUser] = []
     with get_connection() as conn:
-        result = conn.execute(
-            """
+        result = conn.execute("""
           SELECT
               r.reviewer,
               -- Reaction times in minutes for PRs where they reviewed
@@ -168,8 +165,7 @@ def _get_speed_stats() -> list[SpeedForUser]:
           JOIN prs p ON r.pr_id = p.id
           WHERE r.reviewer IS NOT NULL
           GROUP BY r.reviewer
-        """
-        ).fetchall()
+        """).fetchall()
 
         for row in result:
             user, reaction_times_str, prs_with_no_review_str = row
