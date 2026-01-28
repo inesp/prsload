@@ -47,7 +47,7 @@
     {% else %}
       <div class="bg-red-50 border border-red-200 rounded p-3">
         <p class="text-sm text-red-800 mb-2">GQL query <code class="code-red ">{{ gh_query }}</code>.</p>
-        <code class="code-red text-red-800 rounded text-xs block mb-2">{{ gh_exc.user_error_desc() }}</code>
+        <code class="code-red text-red-800 rounded text-xs block mb-2">{{ str(gh_exc) }}</code>
       </div>
     {% endif %}
   </div>

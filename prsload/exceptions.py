@@ -17,9 +17,13 @@ class GitHubException(PRAnalyticsError):
         self.gql_errors = gql_errors
         self.query = query
         self.variables = variables
+
+        if user_msgs := self.user_error_desc():
+            msg = f"{msg} {user_msgs}"
+
         super().__init__(msg)
 
-    def user_error_desc(self) -> str:
+    def _user_error_desc(self) -> str:
         if self.gql_errors:
             return ", ".join([str(e) for e in self.gql_errors])
-        return str(self)
+        return ""
